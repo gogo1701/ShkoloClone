@@ -1,10 +1,14 @@
-﻿namespace ShkoloClone
+﻿using ShkoloClone.Data;
+
+namespace ShkoloClone
 {
     internal class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello, World!");
+            ApplicationDbContext application = new();
+
+            application.SaveChanges();
         }
     }
 }

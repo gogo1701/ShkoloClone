@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ShkoloClone.Models
 {
-    public class Student
+    public class Student : AppUser
     {
         //[JsonPropertyName()] before every field. It tells the JsonSerializer what name the field should have in the JSON file.
         //[JsonConverter(typeof(JsonStringEnumConverter))] before fields which use an enum type. Basically just tells the JsonSerializer to convert the enum type to a string.
