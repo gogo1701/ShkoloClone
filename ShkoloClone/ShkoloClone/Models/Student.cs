@@ -9,31 +9,16 @@ namespace ShkoloClone.Models
 {
     public class Student : AppUser
     {
-        //[JsonPropertyName()] before every field. It tells the JsonSerializer what name the field should have in the JSON file.
-        //[JsonConverter(typeof(JsonStringEnumConverter))] before fields which use an enum type. Basically just tells the JsonSerializer to convert the enum type to a string.
-        
-        private int _id;
-        
-        private string _firstName;
-        
-        private string _lastName;
-        
-        private string _email;
-        
-        private string _phone;
-       
-        private string? _address;
-
-        public Student(int id, string firstName,  string lastName, string email, string phone, string? address)
+        public Student(string userName, string email, string password, string firstName, string lastName,string phone, string? address)
         {
-            _id = id;
-            _firstName = firstName;
-            _lastName = lastName;
-            _email = email;
-            _phone = phone;
-            _address = address;
-            List<Grade> grades = new List<Grade>();
+            Id = Guid.NewGuid();
+            Username = userName;
+            PasswordHash = password;
+            FirstName = firstName;
+            LastName = lastName;
+            PhoneNumber = phone;
+            Address = address;
         }
-
+        public List<Grade> Grades { get; set; }
     }
 }
