@@ -10,7 +10,6 @@ namespace ShkoloClone.Models
     {
         private int studentCount;
         public List<Student> students { get; set; }
-
         public string headTeacherName { get; set; }
 
         public Class(int studentCount, List<Student> students, string headTeacherName)

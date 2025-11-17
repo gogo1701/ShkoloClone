@@ -8,14 +8,14 @@ namespace ShkoloClone.Models
 {
     public class Grade
     {
-        public double grade {  get; set; }
+        public double Value {  get; set; }
 
-        public string subject { get; set; }
+        public string Subject { get; set; }
 
-        public Grade(double grade, string subject)
+        public Grade(double value, string subject)
         {
-            this.grade = grade;
-            this.subject = subject;
+            this.Value = value;
+            this.Subject = subject;
         }
     }
 }
