@@ -19,6 +19,6 @@ namespace ShkoloClone.Models
             PhoneNumber = phone;
             Address = address;
         }
-        public List<Grade> Grades { get; set; }
+        public List<Guid> Grades { get; set; }
     }
 }

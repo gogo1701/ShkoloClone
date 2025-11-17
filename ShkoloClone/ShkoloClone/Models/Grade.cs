@@ -8,6 +8,9 @@ namespace ShkoloClone.Models
 {
     public class Grade
     {
+        public Guid studentId { get; set; }
+
+        public Guid gradeId { get; set; }
         public double Value {  get; set; }
 
         public string Subject { get; set; }
@@ -16,6 +19,7 @@ namespace ShkoloClone.Models
         {
             this.Value = value;
             this.Subject = subject;
+            gradeId = Guid.NewGuid();
         }
     }
 }
