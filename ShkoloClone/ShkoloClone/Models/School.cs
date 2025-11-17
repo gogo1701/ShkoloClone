@@ -6,7 +6,29 @@ using System.Threading.Tasks;
 
 namespace ShkoloClone.Models
 {
-    internal class School
+    public class School
     {
+        private int studentCount;
+        private int teacherCount;
+        private string headMasterName;
+        public string SchoolName { get; set; }
+        public List<Class> ClassList { get; set; }
+
+        public List<string> roomNames { get; set; }
+
+        public string schoolUrl { get; set; }
+
+        public School(string headMasterName, string schoolName, List<Class> classList, List<string> roomNames, string schoolUrl)
+        {
+            studentCount = 0;
+            teacherCount = 0;
+            this.headMasterName = headMasterName;
+            this.SchoolName = schoolName;
+            this.ClassList = classList;
+            this.roomNames = roomNames;
+            this.schoolUrl = schoolUrl;
+        }
+
+
     }
 }

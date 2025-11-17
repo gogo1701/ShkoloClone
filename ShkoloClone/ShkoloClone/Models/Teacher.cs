@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace ShkoloClone.Models
 {
-    internal class Teacher
+    public class Teacher
     {
+        public string Name { get; set; }
+
+        public string Subject { get; set; }
+
+        public List<Class> ClassList { get; set; }
     }
 }
