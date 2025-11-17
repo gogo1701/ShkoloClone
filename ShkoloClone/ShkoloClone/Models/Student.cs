@@ -22,10 +22,18 @@ namespace ShkoloClone.Models
         
         private string _phone;
        
-        private string _address;
+        private string? _address;
 
-
-
+        public Student(int id, string firstName,  string lastName, string email, string phone, string? address)
+        {
+            _id = id;
+            _firstName = firstName;
+            _lastName = lastName;
+            _email = email;
+            _phone = phone;
+            _address = address;
+            List<Grade> grades = new List<Grade>();
+        }
 
     }
 }
