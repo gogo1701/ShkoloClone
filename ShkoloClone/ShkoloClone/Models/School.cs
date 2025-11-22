@@ -11,14 +11,16 @@ namespace ShkoloClone.Models
         private int studentCount;
         private int teacherCount;
         private string headMasterName;
+        
+        public Guid Id { get; set; }
         public string SchoolName { get; set; }
-        public List<Class> ClassList { get; set; }
+        public List<Guid> ClassList { get; set; }
 
         public List<string> roomNames { get; set; }
 
         public string schoolUrl { get; set; }
 
-        public School(string headMasterName, string schoolName, List<Class> classList, List<string> roomNames, string schoolUrl)
+        public School(string headMasterName, string schoolName, List<Guid> classList, List<string> roomNames, string schoolUrl)
         {
             studentCount = 0;
             teacherCount = 0;
