@@ -15,6 +15,7 @@ namespace ShkoloClone.Data
         public List<Class> Classes => Set<Class>("Class");
         public List<Teacher> Teachers => Set<Teacher>("Teacher");
         public List<Student> Students => Set<Student>("Student");
+        public List<Grade> Grades => Set<Grade>("Grade");
     }
 
 }
