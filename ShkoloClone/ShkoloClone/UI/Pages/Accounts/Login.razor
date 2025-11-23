@@ -2,6 +2,8 @@
 @using RazorConsole.Components
 @inject NavigationManager Navigation
 @using Spectre.Console
+@using ShkoloClone.Services
+@using ShkoloClone.Data
 @page "/Login"
 
 <Figlet Content="Login" />
@@ -12,6 +14,11 @@
         <Rows>
             <Markup Content="Login" Foreground="@Color.Grey70"/>
             <Newline/>
+            @if (!string.IsNullOrEmpty(Message))
+            {
+                <Markup Content="@Message" Foreground="@(IsError ? Color.Red : Color.Green)"/>
+                <Newline/>
+            }
             <TextInput Content="@UserName"
                        ValueChanged="@((v) => UserName = v)"
                        Placeholder="Enter your username"/>
@@ -39,10 +46,44 @@
 @code {
     string UserName = string.Empty;
     string Password = string.Empty;
+    string Message = string.Empty;
+    bool IsError = false;
+
+    //  temp DI fix
+    private AccountService GetAccountService()
+    {
+        var dbContext = new ApplicationDbContext();
+        return new AccountService(dbContext);
+    }
 
     private void LoginButton()
     {
-        Navigation.NavigateTo("/");
+        Message = string.Empty;
+        IsError = false;
+
+        if (string.IsNullOrWhiteSpace(UserName) || string.IsNullOrWhiteSpace(Password))
+        {
+            Message = "Please enter both username and password.";
+            IsError = true;
+            return;
+        }
+
+        var accountService = GetAccountService();
+        var result = accountService.LoginUser(UserName, Password);
+
+        if (result.IsSuccess)
+        {
+            Message = result.Message;
+            IsError = false;
+
+            
+            Navigation.NavigateTo("/");
+        }
+        else
+        {
+            Message = result.Message;
+            IsError = true;
+        }
     }
 
     private void Return()

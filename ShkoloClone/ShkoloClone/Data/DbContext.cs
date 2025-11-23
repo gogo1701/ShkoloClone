@@ -5,6 +5,7 @@ namespace ShkoloClone.Data
     public abstract class JsonDbContext
     {
         private readonly string _filePath;
+        private readonly Dictionary<string, object> _cachedLists = new();
 
         protected JsonDbContext(string filePath)
         {
@@ -16,6 +17,11 @@ namespace ShkoloClone.Data
 
         public void SaveChanges()
         {
+            foreach (var kvp in _cachedLists)
+            {
+                Data[kvp.Key] = kvp.Value;
+            }
+
             var json = JsonSerializer.Serialize(Data, new JsonSerializerOptions
             {
                 WriteIndented = true
@@ -45,17 +51,25 @@ namespace ShkoloClone.Data
 
         protected List<T> Set<T>(string name)
         {
+            if (_cachedLists.ContainsKey(name) && _cachedLists[name] is List<T> cachedList)
+            {
+                return cachedList;
+            }
+
+            List<T> list;
             if (!Data.ContainsKey(name))
-                Data[name] = new List<T>();
+            {
+                list = new List<T>();
+            }
+            else
+            {
+                list = JsonSerializer.Deserialize<List<T>>(
+                    JsonSerializer.Serialize(Data[name])
+                ) ?? new List<T>();
+            }
 
-            return JsonSerializer.Deserialize<List<T>>(
-                JsonSerializer.Serialize(Data[name])
-            )!;
-        }
-
-        protected void UpdateSet<T>(string name, List<T> list)
-        {
-            Data[name] = list;
+            _cachedLists[name] = list;
+            return list;
         }
     }
 

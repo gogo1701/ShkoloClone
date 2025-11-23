@@ -8,14 +8,13 @@ namespace ShkoloClone.Models
 {
     public class Class
     {
-        private int studentCount;
-        public List<Guid> students { get; set; }
+        public Guid Id { get; set; }
+        public List<Guid> Students { get; set; }
         public Guid TeacherId { get; set; }
 
-        public Class(int studentCount, List<Guid> students, Guid teacherId)
+        public Class(List<Guid> students, Guid teacherId)
         {
-            this.studentCount = studentCount;
-            this.students = students;
+            this.Students = students;
             this.TeacherId = teacherId;
         }
     }
