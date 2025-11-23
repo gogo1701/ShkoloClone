@@ -1,12 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using RazorConsole.Core;
-using RazorConsole.Components;
-using ShkoloClone.Data;
-using ShkoloClone.Models;
-using ShkoloClone.User_Interface;
-using Counter.Components;
-using FileExplorer.Components;
+using ShkoloClone.UI;
 
 namespace ShkoloClone
 {

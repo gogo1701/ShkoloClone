@@ -43,13 +43,13 @@ namespace ShkoloClone.Services
 
             Console.WriteLine("student or teacher?");
             string type = Console.ReadLine();
-            appUser = AppUserEnum.admin;
+            appUser = AppUserEnum.Admin;
             switch (type)
             {
-                case "student": appUser = AppUserEnum.student; break;
-                case "teacher": appUser = AppUserEnum.teacher; break;
+                case "student": appUser = AppUserEnum.Student; break;
+                case "teacher": appUser = AppUserEnum.Student; break;
             }
-            if (appUser == AppUserEnum.student)
+            if (appUser == AppUserEnum.Student)
             {
                 Student student = new Student(username, email, password, firstName, lastName, phoneNumber, address);
 

@@ -1,0 +1,47 @@
+@namespace Counter.Components
+@using RazorConsole.Components
+@inject NavigationManager Navigation
+@using Spectre.Console
+@page "/"
+
+<Figlet Content="Shkolo Clone" />
+<Newline />
+
+<Panel Title="Account" Border="BoxBorder.Rounded" Expand="true">
+    <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+        <Rows>
+            <Columns>
+                <Markup Content="Login or Register Account" Foreground="@Color.Grey70"/>
+            </Columns>
+            <Newline/>
+            <Columns>
+                <TextButton Content="Login"
+                            OnClick="Login"
+                            BackgroundColor="@Color.Grey"
+                            FocusedColor="@Color.Blue"/>
+                <TextButton Content="Register"
+                            OnClick="Register"
+                            BackgroundColor="@Color.Grey"
+                            FocusedColor="@Color.Green"/>
+            </Columns>
+        </Rows>
+    </Align>
+</Panel>
+
+<Newline />
+<Markup Content="Press Tab to change focus • Press Enter to click • Press Ctrl+C to exit" Foreground="@Color.Grey58" />
+
+@code {
+
+    private int currentCount = 0;
+
+    private void Login()
+    {
+        Navigation.NavigateTo("/Login");
+    }
+
+    private void Register()
+    {
+        Navigation.NavigateTo("/Register");
+    }
+}
