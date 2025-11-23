@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using RazorConsole.Core;
-using ShkoloClone.Data;
-using ShkoloClone.User_Interface;
+using ShkoloClone.UI;
 
 namespace ShkoloClone
 {
@@ -9,9 +8,9 @@ namespace ShkoloClone
     {
         static async Task Main(string[] args)
         {
-            IHostBuilder hostBuilder = Host.CreateDefaultBuilder(args)
-                .UseRazorConsole<>();
-            IHost host = hostBuilder.Build();
+            var hostBuilder = Host.CreateDefaultBuilder(args).UseRazorConsole<App>();
+            
+            var host = hostBuilder.Build();
             await host.RunAsync();
         }
     }

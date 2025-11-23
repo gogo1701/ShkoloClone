@@ -1,0 +1,53 @@
+﻿@namespace Counter.Components
+@using RazorConsole.Components
+@inject NavigationManager Navigation
+@using Spectre.Console
+@page "/Login"
+
+<Figlet Content="Login" />
+<Newline />
+
+<Panel Title="Account" Border="BoxBorder.Rounded" Expand="true">
+    <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+        <Rows>
+            <Markup Content="Login" Foreground="@Color.Grey70"/>
+            <Newline/>
+            <TextInput Content="@UserName"
+                       ValueChanged="@((v) => UserName = v)"
+                       Placeholder="Enter your username"/>
+            <Newline/>
+            <TextInput Content="@Password"
+                       ValueChanged="@((v) => Password = v)"
+                       Placeholder="Enter your password"/>
+            <Newline/>
+            <TextButton Content="Login"
+                        OnClick="LoginButton"
+                        BackgroundColor="@Color.Blue"
+                        FocusedColor="@Color.LightSkyBlue1"/>
+            <Newline/>
+            <TextButton Content="Back to Home"
+                        OnClick="Return"
+                        BackgroundColor="@Color.Green"
+                        FocusedColor="@Color.LightGreen" />
+        </Rows>
+    </Align>
+</Panel>
+
+<Newline />
+<Markup Content="Press Tab to change focus • Press Enter to click • Press Ctrl+C to exit" Foreground="@Color.Grey58" />
+
+@code {
+    string UserName = string.Empty;
+    string Password = string.Empty;
+
+    private void LoginButton()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private void Return()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+}

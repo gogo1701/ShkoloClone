@@ -17,7 +17,14 @@ namespace ShkoloClone.Services
         }
         public void AddGrade(Student student, Grade grade)
         {
-            student.Grades.Add(grade.Id);
+            student.Grades.Add(grade);
+        }
+        public void AddGradeToClass(Class Class, Grade grade)
+        {
+            foreach (var student in _dbContext.Students.Where(x => Class.students.Contains(x.Id)))
+            {
+                student.Grades.Add(grade);
+            }
         }
     }
     
