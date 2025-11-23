@@ -18,28 +18,18 @@ namespace ShkoloClone.Services
         }
 
         /// <summary>
-        /// Creates a new student account
-        /// </summary>
-        /// <param name="username">The username for the student</param>
-        /// <param name="password">The password for the student</param>
-        /// <param name="firstName">The first name of the student</param>
-        /// <param name="lastName">The last name of the student</param>
-        /// <param name="phoneNumber">The phone number of the student</param>
-        /// <param name="address">The address of the student (optional)</param>
-        /// <returns>Result containing the created student ID on success, or an error message on failure</returns>
-        public Result<Guid> CreateStudent(string username, string password, string firstName, string lastName, string phoneNumber, string? address)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Gets a student by id
         /// </summary>
         /// <param name="studentId">The student id</param>
         /// <returns>Result containing the student if found, or an error message</returns>
         public Result<AppUser> GetStudentById(Guid studentId)
         {
-            throw new NotImplementedException();
+            AppUser user = _dbContext.Users.FirstOrDefault(x => x.Id == studentId);
+            if (user == null)
+            {
+                return Result<AppUser>.Failure("Student doesn't exist");
+            }
+            return Result<AppUser>.Success("Student Found!", user);
         }
 
         /// <summary>
@@ -48,7 +38,7 @@ namespace ShkoloClone.Services
         /// <returns>List of all students</returns>
         public List<AppUser> GetAllStudents()
         {
-            throw new NotImplementedException();
+            return _dbContext.Users.Where(x => x.UserType == Enums.AppUserEnum.Student).ToList();
         }
 
         /// <summary>
@@ -58,7 +48,7 @@ namespace ShkoloClone.Services
         /// <returns>List of students in the class</returns>
         public List<AppUser> GetStudentsByClass(Guid classId)
         {
-            throw new NotImplementedException();
+            return _dbContext.Classes.FirstOrDefault(x => x.Id == classId).Students;
         }
 
         /// <summary>
@@ -68,7 +58,7 @@ namespace ShkoloClone.Services
         /// <returns>List of grades for the student</returns>
         public List<Grade> GetStudentGrades(Guid studentId)
         {
-            throw new NotImplementedException();
+            return _dbContext.Grades.Where(x => x.StudentId == studentId).ToList();
         }
 
         /// <summary>
@@ -78,7 +68,7 @@ namespace ShkoloClone.Services
         /// <returns>Dictionary of subjects with their grades</returns>
         public Dictionary<string, List<Grade>> GetStudentGradesBySubject(Guid studentId)
         {
-            throw new NotImplementedException();
+            return _dbContext.Grades.Where(x => x.StudentId == studentId).GroupBy(x => x.Subject).ToDictionary(group => group.Key, group => group.ToList());
         }
 
         /// <summary>
@@ -89,7 +79,17 @@ namespace ShkoloClone.Services
         /// <returns>Result containing the average grade, or an error message</returns>
         public Result<double> GetStudentAverageBySubject(Guid studentId, string subject)
         {
-            throw new NotImplementedException();
+            double result = _dbContext.Grades.Where(x => x.StudentId == studentId).Where(x => x.Subject == subject).Sum(x => x.Value) / _dbContext.Grades.Where(x => x.StudentId == studentId).Where(x => x.Subject == subject).Count();
+
+            if (result > 6.00 || result < 2.00)
+            {
+                return Result<double>.Failure("Sum isn't correct");
+            }
+            if (_dbContext.Users.FirstOrDefault(x => x.Id == studentId) != null)
+            {
+                return Result<double>.Failure("Student doesn't exist");
+            }
+            return Result<double>.Success("Average completed", result);
         }
 
         /// <summary>
@@ -99,7 +99,17 @@ namespace ShkoloClone.Services
         /// <returns>Result containing the overall average, or an error message</returns>
         public Result<double> GetStudentOverallAverage(Guid studentId)
         {
-            throw new NotImplementedException();
+            double result = _dbContext.Grades.Where(x => x.StudentId == studentId).Sum(x => x.Value) / _dbContext.Grades.Where(x => x.StudentId == studentId).Count();
+
+            if (result > 6.00 || result < 2.00)
+            {
+                return Result<double>.Failure("Sum isn't correct");
+            }
+            if (_dbContext.Users.FirstOrDefault(x => x.Id == studentId) != null)
+            {
+                return Result<double>.Failure("Student doesn't exist");
+            }
+            return Result<double>.Success("Average completed", result);
         }
 
         /// <summary>
@@ -109,7 +119,16 @@ namespace ShkoloClone.Services
         /// <returns>Result containing the class if found, or an error message</returns>
         public Result<Class> GetStudentClass(Guid studentId)
         {
-            throw new NotImplementedException();
+            Class Class = _dbContext.Classes.FirstOrDefault(x => x.Students.Contains(_dbContext.Users.FirstOrDefault(x => x.Id == studentId)));
+            if (Class == null)
+            {
+                return Result<Class>.Failure("Class doesn't exist");
+            }
+            if (_dbContext.Users.FirstOrDefault(x => x.Id == studentId) == null)
+            {
+                return Result<Class>.Failure("Student doesn't exist");
+            }
+            return Result<Class>.Success("Class found", Class);
         }
 
         /// <summary>
@@ -119,31 +138,16 @@ namespace ShkoloClone.Services
         /// <returns>Result containing the teacher if found, or an error message</returns>
         public Result<AppUser> GetStudentTeacher(Guid studentId)
         {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Updates student profile
-        /// </summary>
-        /// <param name="studentId">The student id</param>
-        /// <param name="firstName">First name (null to keep existing)</param>
-        /// <param name="lastName">Last name (null to keep existing)</param>
-        /// <param name="phoneNumber">Phone number (null to keep existing)</param>
-        /// <param name="address">Address (null to keep existing)</param>
-        /// <returns>Result indicating success or failure</returns>
-        public Result UpdateStudentProfile(Guid studentId, string? firstName, string? lastName, string? phoneNumber, string? address)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Deletes a student
-        /// </summary>
-        /// <param name="studentId">The student id</param>
-        /// <returns>Result indicating success or failure</returns>
-        public Result DeleteStudent(Guid studentId)
-        {
-            throw new NotImplementedException();
+            Class Class = _dbContext.Classes.FirstOrDefault(x => x.Students.Contains(_dbContext.Users.FirstOrDefault(x => x.Id == studentId)));
+            {
+                return Result<AppUser>.Failure("Class doesn't exist");
+            }
+            if (_dbContext.Users.FirstOrDefault(x => x.Id == studentId) == null)
+            {
+                return Result<AppUser>.Failure("Student doesn't exist");
+            }
+            AppUser user = _dbContext.Users.FirstOrDefault(x => x.Id == Class.TeacherId);
+            return Result<AppUser>.Success("Teacher found!", user);
         }
     }
 }
