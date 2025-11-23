@@ -9,10 +9,10 @@ namespace ShkoloClone.Models
     public class Class
     {
         private int studentCount;
-        public List<Student> students { get; set; }
+        public List<Guid> students { get; set; }
         public string headTeacherName { get; set; }
 
-        public Class(int studentCount, List<Student> students, string headTeacherName)
+        public Class(int studentCount, List<Guid> students, string headTeacherName)
         {
             this.studentCount = studentCount;
             this.students = students;

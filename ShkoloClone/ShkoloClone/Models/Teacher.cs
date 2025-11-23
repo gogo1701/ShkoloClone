@@ -18,6 +18,6 @@ namespace ShkoloClone.Models
             PhoneNumber = phone;
             Address = address;
         }
-        public List<Class> ClassList { get; set; }
+        public List<Guid> ClassList { get; set; }
     }
 }
