@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace ShkoloClone.Enums
 {
-    internal class AppUserEnum
+    public enum AppUserEnum
     {
+        teacher = 0,
+        student = 1,
+        admin = 2,
     }
 }
