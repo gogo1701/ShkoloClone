@@ -8,15 +8,14 @@ namespace ShkoloClone.Models
 {
     public class Grade
     {
-        public Guid studentId { get; set; }
-
+        public Guid StudentId { get; set; }
         public Guid Id { get; set; }
         public double Value {  get; set; }
-
         public string Subject { get; set; }
 
-        public Grade(double value, string subject)
+        public Grade(Guid studentId, double value, string subject)
         {
+            this.StudentId = studentId;
             this.Value = value;
             this.Subject = subject;
             Id = Guid.NewGuid();
