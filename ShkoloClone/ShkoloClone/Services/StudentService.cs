@@ -27,41 +27,59 @@ namespace ShkoloClone.Services
         /// <param name="phoneNumber">The phone number of the student</param>
         /// <param name="address">The address of the student (optional)</param>
         /// <returns>Result containing the created student ID on success, or an error message on failure</returns>
-        public Result<Guid> CreateStudent(string username, string password, string firstName, string lastName, string phoneNumber, string? address);
+        public Result<Guid> CreateStudent(string username, string password, string firstName, string lastName, string phoneNumber, string? address)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Gets a student by id
         /// </summary>
         /// <param name="studentId">The student id</param>
         /// <returns>Result containing the student if found, or an error message</returns>
-        public Result<AppUser> GetStudentById(Guid studentId);
+        public Result<AppUser> GetStudentById(Guid studentId)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Gets all students
         /// </summary>
         /// <returns>List of all students</returns>
-        public List<AppUser> GetAllStudents();
+        public List<AppUser> GetAllStudents()
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Gets all students in a class
         /// </summary>
         /// <param name="classId">The class id</param>
         /// <returns>List of students in the class</returns>
-        public List<AppUser> GetStudentsByClass(Guid classId);
+        public List<AppUser> GetStudentsByClass(Guid classId)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Gets all grades for a student
         /// </summary>
         /// <param name="studentId">The student id</param>
         /// <returns>List of grades for the student</returns>
-        public List<Grade> GetStudentGrades(Guid studentId);
+        public List<Grade> GetStudentGrades(Guid studentId)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Gets all grades for a student grouped by subject
         /// </summary>
         /// <param name="studentId">The student id</param>
         /// <returns>Dictionary of subjects with their grades</returns>
-        public Dictionary<string, List<Grade>> GetStudentGradesBySubject(Guid studentId);
+        public Dictionary<string, List<Grade>> GetStudentGradesBySubject(Guid studentId)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Calculates average grade for a student in a subject
@@ -69,28 +87,40 @@ namespace ShkoloClone.Services
         /// <param name="studentId">The student id</param>
         /// <param name="subject">The subject name</param>
         /// <returns>Result containing the average grade, or an error message</returns>
-        public Result<double> GetStudentAverageBySubject(Guid studentId, string subject);
+        public Result<double> GetStudentAverageBySubject(Guid studentId, string subject)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Calculates overall average grade for a student
         /// </summary>
         /// <param name="studentId">The student id</param>
         /// <returns>Result containing the overall average, or an error message</returns>
-        public Result<double> GetStudentOverallAverage(Guid studentId);
+        public Result<double> GetStudentOverallAverage(Guid studentId)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Gets the class that a student belongs to
         /// </summary>
         /// <param name="studentId">The student id</param>
         /// <returns>Result containing the class if found, or an error message</returns>
-        public Result<Class> GetStudentClass(Guid studentId);
+        public Result<Class> GetStudentClass(Guid studentId)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Gets the teacher of a student's class
         /// </summary>
         /// <param name="studentId">The student id</param>
         /// <returns>Result containing the teacher if found, or an error message</returns>
-        public Result<AppUser> GetStudentTeacher(Guid studentId);
+        public Result<AppUser> GetStudentTeacher(Guid studentId)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Updates student profile
@@ -101,14 +131,20 @@ namespace ShkoloClone.Services
         /// <param name="phoneNumber">Phone number (null to keep existing)</param>
         /// <param name="address">Address (null to keep existing)</param>
         /// <returns>Result indicating success or failure</returns>
-        public Result UpdateStudentProfile(Guid studentId, string? firstName, string? lastName, string? phoneNumber, string? address);
+        public Result UpdateStudentProfile(Guid studentId, string? firstName, string? lastName, string? phoneNumber, string? address)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Deletes a student
         /// </summary>
         /// <param name="studentId">The student id</param>
         /// <returns>Result indicating success or failure</returns>
-        public Result DeleteStudent(Guid studentId);
+        public Result DeleteStudent(Guid studentId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 

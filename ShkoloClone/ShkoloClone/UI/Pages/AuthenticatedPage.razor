@@ -1,3 +1,5 @@
+@* This is an authenticated page. Copy this for other pages that need authentication and authorization.*@
+
 @namespace Counter.Components
 @using RazorConsole.Components
 @inject NavigationManager Navigation
@@ -7,9 +9,6 @@
 @using ShkoloClone.Models
 @using ShkoloClone.Enums
 @page "/authenticated/{UserId:guid}"
-
-<Figlet Content="Authenticated Page" />
-<Newline />
 
 @if (IsLoading)
 {
@@ -36,65 +35,12 @@ else if (!IsAuthenticated)
 }
 else
 {
-    <Panel Title="User Dashboard" Border="BoxBorder.Rounded" Expand="true">
-        <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
-            <Rows>
-                <Markup Content="Welcome!" Foreground="@Color.Grey70"/>
-                <Newline/>
-                <Markup Content="@($"User ID: {UserId}")" Foreground="@Color.White"/>
-                <Markup Content="@($"Username: {CurrentUser?.Username ?? "N/A"}")" Foreground="@Color.White"/>
-                <Markup Content="@($"Role: {UserRole}")" Foreground="@GetRoleColor()"/>
-                <Newline/>
-                
-                @* Role-based content *@
-                @if (UserRole == AppUserEnum.Student)
-                {
-                    <Markup Content="Student Dashboard" Foreground="@Color.Blue"/>
-                    <Newline/>
-                    <TextButton Content="View My Grades"
-                                OnClick="ViewGrades"
-                                BackgroundColor="@Color.Blue"
-                                FocusedColor="@Color.LightSkyBlue1"/>
-                }
-                else if (UserRole == AppUserEnum.Teacher)
-                {
-                    <Markup Content="Teacher Dashboard" Foreground="@Color.Green"/>
-                    <Newline/>
-                    <TextButton Content="Manage Classes"
-                                OnClick="ManageClasses"
-                                BackgroundColor="@Color.Green"
-                                FocusedColor="@Color.LightGreen"/>
-                    <TextButton Content="Add Grades"
-                                OnClick="AddGrades"
-                                BackgroundColor="@Color.Green"
-                                FocusedColor="@Color.LightGreen"/>
-                }
-                else if (UserRole == AppUserEnum.Admin)
-                {
-                    <Markup Content="Admin Dashboard" Foreground="@Color.Yellow"/>
-                    <Newline/>
-                    <TextButton Content="Manage Users"
-                                OnClick="ManageUsers"
-                                BackgroundColor="@Color.Yellow"
-                                FocusedColor="@Color.LightYellow3"/>
-                    <TextButton Content="System Settings"
-                                OnClick="SystemSettings"
-                                BackgroundColor="@Color.Yellow"
-                                FocusedColor="@Color.LightYellow3" />
-                }
-                
-                <Newline/>
-                <TextButton Content="Back to Home"
-                            OnClick="ReturnToHome"
-                            BackgroundColor="@Color.Grey"
-                            FocusedColor="@Color.White"/>
-            </Rows>
-        </Align>
-    </Panel>
+    @* Your page content goes here *@
+    @* User is authenticated and authorized *@
+    @* Use HasRole() method to check user role *@
+    @* Access CurrentUser for user information *@
+    @* Access UserRole for the user's role *@
 }
-
-<Newline />
-<Markup Content="Press Tab to change focus • Press Enter to click • Press Ctrl+C to exit" Foreground="@Color.Grey58" />
 
 @code {
     [Parameter]
@@ -164,50 +110,39 @@ else
         }
     }
 
-    private Color GetRoleColor()
-    {
-        return UserRole switch
-        {
-            AppUserEnum.Student => Color.Blue,
-            AppUserEnum.Teacher => Color.Green,
-            AppUserEnum.Admin => Color.Yellow,
-            _ => Color.White
-        };
-    }
-
-    private bool HasRole(AppUserEnum role)
+    /// <summary>
+    /// Checks if the current user has a specific role
+    /// </summary>
+    /// <param name="role">The role to check</param>
+    /// <returns>True if user has the role, false otherwise</returns>
+    protected bool HasRole(AppUserEnum role)
     {
         return UserRole == role;
     }
 
-    private void ViewGrades()
+    /// <summary>
+    /// Gets the color associated with a role
+    /// </summary>
+    /// <param name="role">The role</param>
+    /// <returns>Color for the role</returns>
+    protected Color GetRoleColor(AppUserEnum role)
     {
-        // Navigate to grades page for student
-        Navigation.NavigateTo($"/grades/{UserId}");
+        return role switch
+        {
+            AppUserEnum.Student => Color.Blue,
+            AppUserEnum.Teacher => Color.Green,
+            AppUserEnum.Admin => Color.Red,
+            _ => Color.White
+        };
     }
 
-    private void ManageClasses()
+    /// <summary>
+    /// Gets the color for the current user's role
+    /// </summary>
+    /// <returns>Color for the current user's role</returns>
+    protected Color GetCurrentRoleColor()
     {
-        // Navigate to classes management for teacher
-        Navigation.NavigateTo($"/classes/{UserId}");
-    }
-
-    private void AddGrades()
-    {
-        // Navigate to add grades page for teacher
-        Navigation.NavigateTo($"/grades/add/{UserId}");
-    }
-
-    private void ManageUsers()
-    {
-        // Navigate to user management for admin
-        Navigation.NavigateTo($"/admin/users/{UserId}");
-    }
-
-    private void SystemSettings()
-    {
-        // Navigate to system settings for admin
-        Navigation.NavigateTo($"/admin/settings/{UserId}");
+        return GetRoleColor(UserRole);
     }
 
     private void ReturnToHome()

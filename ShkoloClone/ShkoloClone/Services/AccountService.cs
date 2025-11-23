@@ -107,14 +107,34 @@ namespace ShkoloClone.Services
         /// </summary>
         /// <param name="userId">The user id</param>
         /// <returns>Result containing the user if found, or an error message</returns>
-        public Result<AppUser> GetUserById(Guid userId);
+        public Result<AppUser> GetUserById(Guid userId)
+        {
+            AppUser userFound = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
+
+            if (userFound == null)
+            {
+                return Result<AppUser>.Failure("User not found.");
+            }
+
+            return Result<AppUser>.Success(data: userFound);
+        }
 
         /// <summary>
         /// Gets a user by username
         /// </summary>
         /// <param name="username">The username</param>
         /// <returns>Result containing the user if found, or an error message</returns>
-        public Result<AppUser> GetUserByUsername(string username);
+        public Result<AppUser> GetUserByUsername(string username)
+        {
+            AppUser userFound = _dbContext.Users.FirstOrDefault(u => u.Username == username);
+
+            if (userFound == null)
+            {
+                return Result<AppUser>.Failure("User not found.");
+            }
+
+            return Result<AppUser>.Success(data: userFound);
+        }
 
         /// <summary>
         /// Updates user profile
@@ -125,7 +145,11 @@ namespace ShkoloClone.Services
         /// <param name="phoneNumber">Phone number (null to keep existing)</param>
         /// <param name="address">Address (null to keep existing)</param>
         /// <returns>Result indicating success or failure</returns>
-        public Result<AppUser> UpdateUserProfile(Guid userId, string? firstName, string? lastName, string? phoneNumber, string? address);
+        public Result<AppUser> UpdateUserProfile(Guid userId, string? firstName, string? lastName, string? phoneNumber,
+            string? address)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Changes user password
@@ -134,33 +158,60 @@ namespace ShkoloClone.Services
         /// <param name="oldPassword">Current password</param>
         /// <param name="newPassword">New password</param>
         /// <returns>Result indicating success or failure</returns>
-        public Result ChangePassword(Guid userId, string oldPassword, string newPassword);
+        public Result ChangePassword(Guid userId, string oldPassword, string newPassword)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Deletes a user
         /// </summary>
         /// <param name="userId">The user id</param>
         /// <returns>Result indicating success or failure</returns>
-        public Result DeleteUser(Guid userId);
+        public Result DeleteUser(Guid userId)
+        {
+            AppUser userToDelete = _dbContext.Users.FirstOrDefault(u => u.Id == userId);
+            _dbContext.Users.Remove(userToDelete);
+            _dbContext.SaveChanges();
+            return Result.Success("User deleted successfully.");
+        }
 
         /// <summary>
         /// Gets all users
         /// </summary>
         /// <returns>List of all users</returns>
-        public List<AppUser> GetAllUsers();
+        public List<AppUser> GetAllUsers()
+        {
+            return _dbContext.Users.ToList();
+        }
 
         /// <summary>
         /// Gets users by type
         /// </summary>
         /// <param name="userType">The user type</param>
         /// <returns>List of users of the specified type</returns>
-        public List<AppUser> GetUsersByType(AppUserEnum userType);
+        public List<AppUser> GetUsersByType(AppUserEnum userType)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Gets the user type by user id
         /// </summary>
         /// <param name="userId">Id of user</param>
         /// <returns>Role of user</returns>
-        public Result<AppUserEnum> GetUserTypeById(Guid userId);
+        public Result<AppUserEnum> GetUserTypeById(Guid userId)
+        {
+            var result = GetUserById(userId);
+
+            if (result.IsSuccess)
+            {
+                return Result<AppUserEnum>.Success( "Operation completed successfully", result.Data.UserType);
+            }
+            else
+            {
+                return Result<AppUserEnum>.Failure("User with this id is not found.");
+            }
+        }
     }
 }

@@ -24,20 +24,29 @@ namespace ShkoloClone.Services
         /// <param name="schoolWebsite">The website URL of the school</param>
         /// <param name="roomNames">List of room names in the school</param>
         /// <returns>Result containing the created school ID on success, or an error message on failure</returns>
-        public Result<Guid> CreateSchool(string schoolName, string schoolWebsite, List<string> roomNames);
+        public Result<Guid> CreateSchool(string schoolName, string schoolWebsite, List<string> roomNames)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Gets a school by id
         /// </summary>
         /// <param name="schoolId">The school id</param>
         /// <returns>Result containing the school if found, or an error message</returns>
-        public Result<School> GetSchoolById(Guid schoolId);
+        public Result<School> GetSchoolById(Guid schoolId)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Gets all schools
         /// </summary>
         /// <returns>List of all schools</returns>
-        public List<School> GetAllSchools();
+        public List<School> GetAllSchools()
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Updates school information
@@ -46,7 +55,10 @@ namespace ShkoloClone.Services
         /// <param name="schoolName">School name (null to keep existing)</param>
         /// <param name="schoolWebsite">Website URL (null to keep existing)</param>
         /// <returns>Result indicating success or failure</returns>
-        public Result UpdateSchool(Guid schoolId, string? schoolName, string? schoolWebsite);
+        public Result UpdateSchool(Guid schoolId, string? schoolName, string? schoolWebsite)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Adds a class to a school
@@ -54,7 +66,10 @@ namespace ShkoloClone.Services
         /// <param name="schoolId">The school id</param>
         /// <param name="classId">The class id</param>
         /// <returns>Result indicating success or failure</returns>
-        public Result AddClassToSchool(Guid schoolId, Guid classId);
+        public Result AddClassToSchool(Guid schoolId, Guid classId)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Removes a class from a school
@@ -62,7 +77,10 @@ namespace ShkoloClone.Services
         /// <param name="schoolId">The school id</param>
         /// <param name="classId">The class id</param>
         /// <returns>Result indicating success or failure</returns>
-        public Result RemoveClassFromSchool(Guid schoolId, Guid classId);
+        public Result RemoveClassFromSchool(Guid schoolId, Guid classId)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Adds a room to a school
@@ -70,7 +88,10 @@ namespace ShkoloClone.Services
         /// <param name="schoolId">The school id</param>
         /// <param name="roomName">The room name</param>
         /// <returns>Result indicating success or failure</returns>
-        public Result AddRoomToSchool(Guid schoolId, string roomName);
+        public Result AddRoomToSchool(Guid schoolId, string roomName)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Removes a room from a school
@@ -78,28 +99,40 @@ namespace ShkoloClone.Services
         /// <param name="schoolId">The school id</param>
         /// <param name="roomName">The room name</param>
         /// <returns>Result indicating success or failure</returns>
-        public Result RemoveRoomFromSchool(Guid schoolId, string roomName);
+        public Result RemoveRoomFromSchool(Guid schoolId, string roomName)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Gets all classes in a school
         /// </summary>
         /// <param name="schoolId">The school id</param>
         /// <returns>List of classes in the school</returns>
-        public List<Class> GetClassesInSchool(Guid schoolId);
+        public List<Class> GetClassesInSchool(Guid schoolId)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Gets all rooms in a school
         /// </summary>
         /// <param name="schoolId">The school id</param>
         /// <returns>List of room names</returns>
-        public List<string> GetRoomsInSchool(Guid schoolId);
+        public List<string> GetRoomsInSchool(Guid schoolId)
+        {
+            throw new NotImplementedException();
+        }
 
         /// <summary>
         /// Deletes a school
         /// </summary>
         /// <param name="schoolId">The school id</param>
         /// <returns>Result indicating success or failure</returns>
-        public Result DeleteSchool(Guid schoolId);
+        public Result DeleteSchool(Guid schoolId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
 

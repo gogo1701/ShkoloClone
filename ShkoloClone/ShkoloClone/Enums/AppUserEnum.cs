@@ -8,8 +8,8 @@ namespace ShkoloClone.Enums
 {
     public enum AppUserEnum
     {
-        Teacher = 0,
-        Student = 1,
-        Admin = 2,
+        Student = 0,
+        Teacher = 1,
+        Admin = 2
     }
 }
