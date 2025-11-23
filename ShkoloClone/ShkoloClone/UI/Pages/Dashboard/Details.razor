@@ -40,9 +40,11 @@ else
             <Rows>
                 <Markup Content="User Details" Foreground="@GetCurrentRoleColor()" Decoration="Decoration.Bold"/>
                 <Newline/>
-                <Markup Content="Full Name: {CurrentUser?.FirstName} {CurrentUser?.LastName}" Foreground="Color.White"/>
-                <Markup Content="Email: {CurrentUser?.Email}" Foreground="Color.White"/>
-                <Markup Content="Role: {UserRole}" Foreground="Color.White"/>
+                <Markup Content="@GetUsername()" Foreground="Color.White"/>
+                <Markup Content="@GetName()" Foreground="Color.White"/>
+                <Markup Content="@GetPhoneNumber()" Foreground="Color.White"/>
+                <Markup Content="@GetAddress()" Foreground="Color.White"/>
+                <Markup Content="@UserRole.ToString()" Foreground="@GetCurrentRoleColor()"/>
                 <Newline/>
                 <TextButton Content="Back to Home"
                             OnClick="ReturnToHome"
@@ -174,6 +176,11 @@ else
     protected Color GetCurrentRoleColor()
     {
         return GetRoleColor(UserRole);
+    }
+
+    private void ReturnToDashboard()
+    {
+        Navigation.NavigateTo($"/Dashboard/{UserId}");
     }
 
     private void ReturnToHome()
