@@ -157,6 +157,9 @@ namespace ShkoloClone.Services
             user.LastName = lastName;
             user.PhoneNumber = phoneNumber;
             user.Address = address;
+
+            _dbContext.SaveChanges();
+
             return Result<AppUser>.Success("User successfully updated", user);
         }
 

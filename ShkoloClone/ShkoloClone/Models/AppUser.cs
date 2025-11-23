@@ -24,7 +24,7 @@ namespace ShkoloClone.Models
             PasswordHash = passwordhash;
             FirstName = firstname;
             LastName = lastname;
-            PhoneNumber = PhoneNumber;
+            PhoneNumber = phonenumber;
             Address = address;
 
         }

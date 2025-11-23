@@ -8,7 +8,7 @@
 @using ShkoloClone.Data
 @using ShkoloClone.Models
 @using ShkoloClone.Enums
-@page "/Details/{UserId:guid}"
+@page "/Details/Edit/{UserId:guid}"
 
 @if (IsLoading)
 {
@@ -35,26 +35,34 @@ else if (!IsAuthenticated)
 }
 else
 {
-    <Figlet Content="User Details"/>
-    <Panel Title="User Details">
+
+    <Figlet Content="Edit Profile" />
+    <Panel Title="Edit Profile" Border="BoxBorder.Rounded" Expand="true">
         <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+            @if (!string.IsNullOrEmpty(InfoMessage))
+            {
+                <Markup Content="@InfoMessage" Foreground="@(InfoMessage.Length == 0 ? Color.Red : Color.Green)" />
+                <Newline/>
+            }
             <Rows>
-                <Markup Content="User Details" Foreground="@GetCurrentRoleColor()" Decoration="Decoration.Bold"/>
+                <Markup Content="Edit your details here."/>
+
                 <Newline/>
-                <Markup Content="@GetUsername()" Foreground="Color.White"/>
-                <Markup Content="@GetName()" Foreground="Color.White"/>
-                <Markup Content="@GetPhoneNumber()" Foreground="Color.White"/>
-                <Markup Content="@GetAddress()" Foreground="Color.White"/>
-                <Markup Content="@GetUserRole()" Foreground="@GetCurrentRoleColor()"/>
+                <Markup Content="First Name"/>
+                <TextInput @bind-Value="EditFirstName"/>
+
+                <Markup Content="Last Name"/>
+                <TextInput @bind-Value="EditLastName"/>
+
+                <Markup Content="Phone Number"/>
+                <TextInput @bind-Value="EditPhone"/>
+
+                <Markup Content="Address"/>
+                <TextInput @bind-Value="EditAddress"/>
                 <Newline/>
-                <TextButton Content="Change User Details"
-                            OnClick="GoToChangeDetails"
-                            BackgroundColor="Color.Blue"
-                            FocusedColor="Color.LightSkyBlue1"/>
-                <TextButton Content="Back to Dashboard"
-                            OnClick="ReturnToDashboard"
-                            BackgroundColor="@Color.Green"
-                            FocusedColor="@Color.LightGreen"/>
+
+                <TextButton Content="Save Changes" BackgroundColor="@Color.Green" OnClick="SaveProfile"/>
+                <TextButton Content="Back To Home" BackgroundColor="@Color.Grey30" OnClick="ReturnToDetails"/>
             </Rows>
         </Align>
     </Panel>
@@ -77,34 +85,47 @@ else
         return new AccountService(dbContext);
     }
 
-    private string GetUsername()
-    {
-        return $"Username: {CurrentUser.Username}";
-    }
-
-    private string GetName()
-    {
-        return $"Name: {CurrentUser.FirstName} {CurrentUser.LastName}";
-    }
-
-    private string GetPhoneNumber()
-    {
-        return $"Phone Number: {CurrentUser.PhoneNumber}";
-    }
-
-    private string GetAddress()
-    {
-        return $"Address: {CurrentUser.Address}";
-    }
-
-    private string GetUserRole()
-    {
-        return $"Role: {CurrentUser.UserType.ToString()}";
-    }
+    private string EditFirstName = "";
+    private string EditLastName = "";
+    private string EditPhone = "";
+    private string EditAddress = "";
+    private string InfoMessage = "";
 
     protected override void OnInitialized()
     {
         AuthenticateUser();
+
+        if (CurrentUser != null)
+        {
+            EditFirstName = CurrentUser.FirstName;
+            EditLastName = CurrentUser.LastName;
+            EditPhone = CurrentUser.PhoneNumber;
+            EditAddress = CurrentUser.Address;
+        }
+    }
+
+    private void SaveProfile()
+    {
+        var accountService = GetAccountService();
+
+        var result = accountService.UpdateUserProfile(
+            UserId,
+            EditFirstName,
+            EditLastName,
+            EditPhone,
+            EditAddress
+        );
+
+        if (result.IsSuccess)
+        {
+            CurrentUser = result.Data;
+
+            InfoMessage = "Profile updated successfully!";
+        }
+        else
+        {
+            InfoMessage = $"{result.Message}";
+        }
     }
 
     private void AuthenticateUser()
@@ -116,9 +137,9 @@ else
         try
         {
             var accountService = GetAccountService();
-
+            
             var userResult = accountService.GetUserById(UserId);
-
+            
             if (!userResult.IsSuccess || userResult.Data == null)
             {
                 IsAuthenticated = false;
@@ -130,7 +151,7 @@ else
             CurrentUser = userResult.Data;
 
             var roleResult = accountService.GetUserTypeById(UserId);
-
+            
             if (roleResult.IsSuccess && roleResult.Data != null)
             {
                 UserRole = roleResult.Data;
@@ -188,18 +209,14 @@ else
         return GetRoleColor(UserRole);
     }
 
-    private void ReturnToDashboard()
+    private void ReturnToDetails()
     {
-        Navigation.NavigateTo($"/Dashboard/{UserId}");
+        Navigation.NavigateTo($"/Details/{UserId}");
     }
 
     private void ReturnToHome()
     {
         Navigation.NavigateTo("/");
-    }
-    private void GoToChangeDetails()
-    {
-        Navigation.NavigateTo($"/Details/Edit/{UserId}");
     }
 }
 
