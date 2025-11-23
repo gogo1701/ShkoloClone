@@ -1,0 +1,429 @@
+@* This is an authenticated page. Copy this for other pages that need authentication and authorization.*@
+
+@namespace Counter.Components
+@using RazorConsole.Components
+@inject NavigationManager Navigation
+@using Spectre.Console
+@using ShkoloClone.Services
+@using ShkoloClone.Data
+@using ShkoloClone.Models
+@using ShkoloClone.Enums
+@page "/Admin/SchoolSettings/{UserId:guid}"
+
+@if (IsLoading)
+{
+    <Panel Title="Loading" Border="BoxBorder.Rounded" Expand="true">
+        <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+            <Markup Content="Loading user information..." Foreground="@Color.Grey70" />
+        </Align>
+    </Panel>
+}
+else if (!IsAuthenticated)
+{
+    <Panel Title="Access Denied" Border="BoxBorder.Rounded" Expand="true">
+        <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+            <Rows>
+                <Markup Content="@ErrorMessage" Foreground="@Color.Red" />
+                <Newline />
+                <TextButton Content="Back to Home"
+                            OnClick="ReturnToHome"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.LightGreen" />
+            </Rows>
+        </Align>
+    </Panel>
+}
+else if (!HasRole(AppUserEnum.Admin))
+{
+    <Panel Title="Access Denied" Border="BoxBorder.Rounded" Expand="true">
+        <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+            <Rows>
+                <Markup Content="Only administrators can access this page." Foreground="@Color.Red" />
+                <Newline />
+                <TextButton Content="Back"
+                            OnClick="ReturnToAuthenticated"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.LightGreen" />
+            </Rows>
+        </Align>
+    </Panel>
+}
+else
+{
+    <Figlet Content="School Settings" />
+    <Newline />
+
+    <Panel Title="Select School" Border="BoxBorder.Rounded" Expand="true">
+        <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+            <Rows>
+                <Markup Content="Select a school to manage:" Foreground="@Color.Grey70" />
+                <Newline />
+                @if (AllSchools.Count == 0)
+                {
+                    <Markup Content="No schools found." Foreground="@Color.Yellow" />
+                }
+                else
+                {
+                    <Select Options="@SchoolOptions" 
+                            Value="@SelectedSchoolIdString" 
+                            ValueChanged="@OnSchoolSelected" 
+                            Expand="true" />
+                }
+            </Rows>
+        </Align>
+    </Panel>
+
+    <Newline />
+
+    @if (SelectedSchool != null)
+    {
+        <Panel Title="School Information" Border="BoxBorder.Rounded" Expand="true">
+            <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+                <Rows>
+                    <Markup Content="Edit School Information" Foreground="@Color.Grey70" />
+                    <Newline />
+                    @if (!string.IsNullOrEmpty(UpdateMessage))
+                    {
+                        <Markup Content="@UpdateMessage" Foreground="@(UpdateIsError ? Color.Red : Color.Green)" />
+                        <Newline />
+                    }
+                    <Markup Content="School Name:" Foreground="@Color.Grey70" />
+                    <TextInput Content="@SchoolName"
+                               ValueChanged="@((v) => SchoolName = v)"
+                               Placeholder="School Name" />
+                    <Newline />
+                    <Markup Content="School Website:" Foreground="@Color.Grey70" />
+                    <TextInput Content="@SchoolWebsite"
+                               ValueChanged="@((v) => SchoolWebsite = v)"
+                               Placeholder="School Website URL" />
+                    <Newline />
+                    <TextButton Content="Update School Information"
+                                OnClick="UpdateSchoolInfo"
+                                BackgroundColor="@Color.Blue"
+                                FocusedColor="@Color.LightSkyBlue1" />
+                </Rows>
+            </Align>
+        </Panel>
+
+        <Newline />
+
+        <Panel Title="Rooms" Border="BoxBorder.Rounded" Expand="true">
+            <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+                <Rows>
+                    <Markup Content="Manage School Rooms" Foreground="@Color.Grey70" />
+                    <Newline />
+                    @if (!string.IsNullOrEmpty(RoomMessage))
+                    {
+                        <Markup Content="@RoomMessage" Foreground="@(RoomIsError ? Color.Red : Color.Green)" />
+                        <Newline />
+                    }
+                    <Markup Content="Current Rooms:" Foreground="@Color.Grey70" />
+                    @if (CurrentRooms.Count == 0)
+                    {
+                        <Markup Content="No rooms found." Foreground="@Color.Yellow" />
+                    }
+                    else
+                    {
+                        @foreach (var room in CurrentRooms)
+                        {
+                            <Markup Content="@room" Foreground="@Color.White" />
+                        }
+                    }
+                    <Newline />
+                    <Markup Content="Add New Room:" Foreground="@Color.Grey70" />
+                    <TextInput Content="@NewRoomName"
+                               ValueChanged="@((v) => NewRoomName = v)"
+                               Placeholder="Enter room name" />
+                    <Newline />
+                    <TextButton Content="Add Room"
+                                OnClick="AddRoom"
+                                BackgroundColor="@Color.Green"
+                                FocusedColor="@Color.LightGreen" />
+                </Rows>
+            </Align>
+        </Panel>
+
+        <Newline />
+
+        <Panel Title="Classes" Border="BoxBorder.Rounded" Expand="true">
+            <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+                <Rows>
+                    <Markup Content="Classes in School" Foreground="@Color.Grey70" />
+                    <Newline />
+                    @if (SchoolClasses.Count == 0)
+                    {
+                        <Markup Content="No classes found in this school." Foreground="@Color.Yellow" />
+                    }
+                    else
+                    {
+                        @foreach (var classItem in SchoolClasses)
+                        {
+                            <Markup Content="@($"Class ID: {classItem.Id}")" Foreground="@Color.White" />
+                        }
+                    }
+                </Rows>
+            </Align>
+        </Panel>
+    }
+
+    <Newline />
+    <TextButton Content="Back"
+                OnClick="ReturnToAuthenticated"
+                BackgroundColor="@Color.Grey"
+                FocusedColor="@Color.White" />
+}
+
+@code {
+    [Parameter]
+    public Guid UserId { get; set; }
+
+    private bool IsLoading = true;
+    private bool IsAuthenticated = false;
+    private string ErrorMessage = string.Empty;
+    private AppUser? CurrentUser;
+    private AppUserEnum UserRole = AppUserEnum.Student;
+
+    private List<School> AllSchools = new();
+    private string[] SchoolOptions = Array.Empty<string>();
+    private string SelectedSchoolIdString = string.Empty;
+    private School? SelectedSchool;
+    private string SchoolName = string.Empty;
+    private string SchoolWebsite = string.Empty;
+    private List<string> CurrentRooms = new();
+    private List<Class> SchoolClasses = new();
+    private string NewRoomName = string.Empty;
+    private string UpdateMessage = string.Empty;
+    private bool UpdateIsError = false;
+    private string RoomMessage = string.Empty;
+    private bool RoomIsError = false;
+
+    // Temp DI fix
+    private AccountService GetAccountService()
+    {
+        var dbContext = new ApplicationDbContext();
+        return new AccountService(dbContext);
+    }
+
+    private SchoolService GetSchoolService()
+    {
+        var dbContext = new ApplicationDbContext();
+        return new SchoolService(dbContext);
+    }
+
+    protected override void OnInitialized()
+    {
+        AuthenticateUser();
+    }
+
+    private void AuthenticateUser()
+    {
+        IsLoading = true;
+        IsAuthenticated = false;
+        ErrorMessage = string.Empty;
+
+        try
+        {
+            var accountService = GetAccountService();
+
+            var userResult = accountService.GetUserById(UserId);
+
+            if (!userResult.IsSuccess || userResult.Data == null)
+            {
+                IsAuthenticated = false;
+                ErrorMessage = userResult.Message ?? "User not found. Please log in.";
+                IsLoading = false;
+                return;
+            }
+
+            CurrentUser = userResult.Data;
+
+            var roleResult = accountService.GetUserTypeById(UserId);
+
+            if (roleResult.IsSuccess && roleResult.Data != null)
+            {
+                UserRole = roleResult.Data;
+            }
+            else
+            {
+                UserRole = CurrentUser.UserType;
+            }
+
+            IsAuthenticated = true;
+            LoadSchools();
+        }
+        catch (Exception ex)
+        {
+            IsAuthenticated = false;
+            ErrorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void LoadSchools()
+    {
+        try
+        {
+            var schoolService = GetSchoolService();
+            AllSchools = schoolService.GetAllSchools();
+
+            string test = string.Empty;
+
+            if (AllSchools.Count > 0)
+            {
+                SchoolOptions = AllSchools.Select(s => s.SchoolName).ToArray();
+                if (string.IsNullOrEmpty(SelectedSchoolIdString) && SchoolOptions.Length > 0)
+                {
+                    SelectedSchoolIdString = SchoolOptions[0];
+                    OnSchoolSelected(SelectedSchoolIdString);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle error - methods may not be implemented yet
+        }
+    }
+
+    private void OnSchoolSelected(string selectedSchoolName)
+    {
+        SelectedSchoolIdString = selectedSchoolName;
+        SelectedSchool = AllSchools.FirstOrDefault(s => s.SchoolName == selectedSchoolName);
+        
+        if (SelectedSchool != null)
+        {
+            SchoolName = SelectedSchool.SchoolName;
+            SchoolWebsite = SelectedSchool.SchoolWebsite ?? string.Empty;
+            CurrentRooms = SelectedSchool.Rooms ?? new List<string>();
+            LoadSchoolClasses();
+        }
+    }
+
+    private void LoadSchoolClasses()
+    {
+        try
+        {
+            if (SelectedSchool == null) return;
+            
+            var schoolService = GetSchoolService();
+            SchoolClasses = schoolService.GetClassesInSchool(SelectedSchool.Id);
+        }
+        catch (Exception ex)
+        {
+            // Handle error - methods may not be implemented yet
+        }
+    }
+
+    private void UpdateSchoolInfo()
+    {
+        UpdateMessage = string.Empty;
+        UpdateIsError = false;
+
+        if (SelectedSchool == null)
+        {
+            UpdateMessage = "Please select a school first.";
+            UpdateIsError = true;
+            return;
+        }
+
+        try
+        {
+            var schoolService = GetSchoolService();
+            var result = schoolService.UpdateSchool(SelectedSchool.Id, SchoolName, SchoolWebsite);
+
+            if (result.IsSuccess)
+            {
+                UpdateMessage = "School information updated successfully.";
+                UpdateIsError = false;
+                LoadSchools();
+                OnSchoolSelected(SelectedSchoolIdString);
+            }
+            else
+            {
+                UpdateMessage = result.Message;
+                UpdateIsError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            UpdateMessage = $"An error occurred: {ex.Message}";
+            UpdateIsError = true;
+        }
+    }
+
+    private void AddRoom()
+    {
+        RoomMessage = string.Empty;
+        RoomIsError = false;
+
+        if (SelectedSchool == null)
+        {
+            RoomMessage = "Please select a school first.";
+            RoomIsError = true;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NewRoomName))
+        {
+            RoomMessage = "Please enter a room name.";
+            RoomIsError = true;
+            return;
+        }
+
+        if (CurrentRooms.Contains(NewRoomName))
+        {
+            RoomMessage = "This room already exists.";
+            RoomIsError = true;
+            return;
+        }
+
+        try
+        {
+            var schoolService = GetSchoolService();
+            var result = schoolService.AddRoomToSchool(SelectedSchool.Id, NewRoomName);
+
+            if (result.IsSuccess)
+            {
+                RoomMessage = $"Room '{NewRoomName}' added successfully.";
+                RoomIsError = false;
+                NewRoomName = string.Empty;
+                LoadSchools();
+                OnSchoolSelected(SelectedSchoolIdString);
+            }
+            else
+            {
+                RoomMessage = result.Message;
+                RoomIsError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            RoomMessage = $"An error occurred: {ex.Message}";
+            RoomIsError = true;
+        }
+    }
+
+    /// <summary>
+    /// Checks if the current user has a specific role
+    /// </summary>
+    /// <param name="role">The role to check</param>
+    /// <returns>True if user has the role, false otherwise</returns>
+    protected bool HasRole(AppUserEnum role)
+    {
+        return UserRole == role;
+    }
+
+    private void ReturnToAuthenticated()
+    {
+        Navigation.NavigateTo($"/authenticated/{UserId}");
+    }
+
+    private void ReturnToHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+}
+
+

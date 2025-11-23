@@ -58,7 +58,7 @@ namespace ShkoloClone.Services
         public List<AppUser> GetTeacherStudents(Guid teacherId)
         {
              return _dbContext.Users.Where(x => x.UserType == Enums.AppUserEnum.Student).Where(x => _dbContext.Classes.Where(y => y.TeacherId == teacherId) ==
-            _dbContext.Classes.Where(x => x.Students.Contains(x.Id))).ToList();
+            _dbContext.Classes.Where(x => x.Students.Contains(_dbContext.Users.FirstOrDefault(x=>x.Id == teacherId)))).ToList();
         }
 
         /// <summary>
@@ -69,7 +69,7 @@ namespace ShkoloClone.Services
         /// <returns>Result containing the list of students if the teacher teaches the class, or an error message</returns>
         public Result<List<AppUser>> GetStudentsInTeacherClass(Guid teacherId, Guid classId)
         {
-            List<AppUser> appUsers = _dbContext.Users.Where(x => x.UserType == Enums.AppUserEnum.Student).Where(x => _dbContext.Classes.Where(x => x.Id == classId).Where(x => x.TeacherId == teacherId) == _dbContext.Classes.Where(x => x.Students.Contains(x.Id))).ToList();
+            List<AppUser> appUsers = _dbContext.Users.Where(x => x.UserType == Enums.AppUserEnum.Student).Where(x => _dbContext.Classes.Where(x => x.Id == classId).Where(x => x.TeacherId == teacherId) == _dbContext.Classes.Where(x => x.Students.Contains(_dbContext.Users.FirstOrDefault(x => x.Id == teacherId)))).ToList();
 
             Result<List<AppUser>> result = Result<List<AppUser>>.Success("All Students gotten!", appUsers);
             return result;

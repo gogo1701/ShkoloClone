@@ -169,18 +169,20 @@ namespace ShkoloClone.Services
         /// <returns>Result indicating success or failure</returns>
         public Result ChangePassword(Guid userId, string oldPassword, string newPassword)
         {
-            if (_dbContext.Users.FirstOrDefault(x => x.Id == userId) == null)
-            {
+            var user = _dbContext.Users.FirstOrDefault(x => x.Id == userId);
+
+            if (user == null)
                 return Result.Failure("User not found");
-            }
-            if (_dbContext.Users.FirstOrDefault(x => x.Id == userId).PasswordHash == Hash(oldPassword))
-            {
-                _dbContext.Users.FirstOrDefault(x => x.Id == userId).PasswordHash = Hash(newPassword);
-                return Result.Success("Password changed successfully");
-            }
-            return Result.Failure("Password is wrong");
-            _dbContext.SaveChanges(); 
+
+            if (user.PasswordHash != Hash(oldPassword))
+                return Result.Failure("Password is wrong");
+
+            user.PasswordHash = Hash(newPassword);
+            _dbContext.SaveChanges();
+
+            return Result.Success("Password changed successfully");
         }
+
 
         /// <summary>
         /// Deletes a user
@@ -232,5 +234,14 @@ namespace ShkoloClone.Services
                 return Result<AppUserEnum>.Failure("User with this id is not found.");
             }
         }
+
+        private string Hash(string input)
+        {
+            using var sha = System.Security.Cryptography.SHA256.Create();
+            var bytes = Encoding.UTF8.GetBytes(input);
+            var hash = sha.ComputeHash(bytes);
+            return Convert.ToHexString(hash);
+        }
+
     }
 }

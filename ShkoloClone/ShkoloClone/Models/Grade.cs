@@ -10,7 +10,6 @@ namespace ShkoloClone.Models
     {
         public Guid Id { get; set; }
         public Guid StudentId { get; set; }
-
         public Guid TeacherId { get; set; }
         public double Value {  get; set; }
         public string Subject { get; set; }

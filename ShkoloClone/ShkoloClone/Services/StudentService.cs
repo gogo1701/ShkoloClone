@@ -139,6 +139,7 @@ namespace ShkoloClone.Services
         public Result<AppUser> GetStudentTeacher(Guid studentId)
         {
             Class Class = _dbContext.Classes.FirstOrDefault(x => x.Students.Contains(_dbContext.Users.FirstOrDefault(x => x.Id == studentId)));
+            if(Class == null)
             {
                 return Result<AppUser>.Failure("Class doesn't exist");
             }

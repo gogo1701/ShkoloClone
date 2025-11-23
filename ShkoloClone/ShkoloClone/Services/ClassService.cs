@@ -170,6 +170,7 @@ namespace ShkoloClone.Services
             }
             _dbContext.Classes.FirstOrDefault(x => x.Id == classId).Students = users;
             _dbContext.SaveChanges();
+            return Result.Success();
         }
 
         /// <summary>
@@ -186,6 +187,8 @@ namespace ShkoloClone.Services
             Class Class = _dbContext.Classes.FirstOrDefault(x => x.Id == classId);
             _dbContext.Classes.Remove(Class);
             _dbContext.SaveChanges();
+
+            return Result.Success();
         }
 
         /// <summary>

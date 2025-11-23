@@ -8,7 +8,8 @@
 @using ShkoloClone.Data
 @using ShkoloClone.Models
 @using ShkoloClone.Enums
-@page "/authenticated/{UserId:guid}"
+@using ShkoloClone.UI
+@page "/Student/ViewGrades/{UserId:guid}"
 
 @if (IsLoading)
 {
@@ -35,10 +36,27 @@ else if (!IsAuthenticated)
 }
 else
 {
-    
-}
+    <Panel Title="Grades" Border="BoxBorder.Rounded">
+        <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+            <Grid Columns="2">
+                <Markup Content="Subject" Foreground="Color.Gold3_1"/>
+                <Markup Content="Value" Foreground="Color.Gold3_1"/>
 
+                @foreach (var kvp in GetStudentService().GetStudentGradesBySubject(UserId))
+                {
+                    <Markup Content="@kvp.Key"/>
+                    <Markup Content="@ReturnString(kvp)"/>
+                }
+            </Grid>
+            <TextButton Content="Return" OnClick="ReturnToDashboard" BackgroundColor="@Color.Green"
+                        FocusedColor="@Color.LightGreen"/>
+        </Align>
+    </Panel>
+}
 @code {
+
+
+
     [Parameter]
     public Guid UserId { get; set; }
 
@@ -54,6 +72,20 @@ else
         var dbContext = new ApplicationDbContext();
         return new AccountService(dbContext);
     }
+
+    private GradeService GetGradeService()
+    {
+        var dbContext = new ApplicationDbContext();
+        return new GradeService(dbContext);
+    }
+
+    private StudentService GetStudentService()
+    {
+        var dbContext = new ApplicationDbContext();
+        return new StudentService(dbContext);
+    }
+
+    private string ReturnString(KeyValuePair<string, List<Grade>> kvp) => string.Join(" ", kvp.Value.Select(g => g.Value.ToString()));
 
     protected override void OnInitialized()
     {
@@ -139,6 +171,11 @@ else
     protected Color GetCurrentRoleColor()
     {
         return GetRoleColor(UserRole);
+    }
+
+    private void ReturnToDashboard()
+    {
+        Navigation.NavigateTo($"/Dashboard/{UserId}");
     }
 
     private void ReturnToHome()

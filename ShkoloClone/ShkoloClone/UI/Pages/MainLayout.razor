@@ -1,4 +1,9 @@
 ﻿@using RazorConsole.Components
+@using Spectre.Console
+@using Grid = RazorConsole.Components.Grid
+@using Markup = RazorConsole.Components.Markup
+@using Padder = RazorConsole.Components.Padder
+@using Panel = RazorConsole.Components.Panel
 @inherits LayoutComponentBase
 
 <Panel Expand="true">
@@ -10,3 +15,5 @@
         </Padder>
     </Grid>
 </Panel>
+<Newline />
+<Markup Content="Press Tab to change focus • Press Enter to click • Press Ctrl+C to exit" Foreground="@Color.Grey58" />
