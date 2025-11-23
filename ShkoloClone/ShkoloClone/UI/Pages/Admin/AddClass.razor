@@ -1,3 +1,5 @@
+@* This is an authenticated page. Copy this for other pages that need authentication and authorization.*@
+
 @namespace Counter.Components
 @using RazorConsole.Components
 @inject NavigationManager Navigation
@@ -6,8 +8,7 @@
 @using ShkoloClone.Data
 @using ShkoloClone.Models
 @using ShkoloClone.Enums
-@using Spinner = Spectre.Console.Spinner
-@page "/Dashboard/{UserId:guid}"
+@page "/Admin/SchoolSettings/AddClass/{UserId:guid}"
 
 @if (IsLoading)
 {
@@ -34,49 +35,29 @@ else if (!IsAuthenticated)
 }
 else
 {
-    @if (HasRole(AppUserEnum.Student))
-    {
-        <Figlet Content="Student Dashboard" />
-        <Panel Title="Student Dashboard" Border="BoxBorder.Rounded" Expand="true">
-            <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
-                <Rows>
-                    <Markup Content="@GetNameFullString()" Foreground="Color.Gold3_1" Decoration="Decoration.Bold"/>
-                    <Newline/>
-                    <Markup Content="Please select one of the options." Foreground="Color.White" Decoration="Decoration.Bold"/>
-                    <Spinner SpinnerType="Spinner.Known.BouncingBar"></Spinner>
-                    <TextButton Content="View All Grades" BackgroundColor="Color.Green" OnClick="ViewGradesButton"/>
-                    <TextButton Content="View User Details" BackgroundColor="@GetCurrentRoleColor()" OnClick="GoToDetails"></TextButton>
-                    <TextButton Content="Logout" BackgroundColor="Color.Red" OnClick="ReturnToHome"/>
+    <Figlet Content="Add Class"/>
+    <Panel Title="Add Class" Border="BoxBorder.Rounded" Expand="true">
+        <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+            <Rows>
+                <Select Options="@TeacherNames.ToArray()"
+                        @bind-Value="SelectedTeacher"
+                        Placeholder="Select a teacher" />
+                <Newline />
+                
+                @for (int i = 0; i < StudentSelections.Count; i++)
+                {
+                    <Select Options="@StudentOptions.ToArray()"
+                            @bind-Value="StudentSelections[i]"
+                            Placeholder="Select student" />
+                }
 
-                </Rows>
-            </Align>
-        </Panel>
-    }
-    else if (HasRole(AppUserEnum.Teacher))
-    {
-        <Figlet Content="Student Dashboard" />
-        <Panel Title="Teacher Dashboard" Border="BoxBorder.Rounded" Expand="true">
+                <TextButton Content="Add Another Student"
+                            OnClick="AddStudentSlot" />
 
-        </Panel>
-    }
-    else if (HasRole(AppUserEnum.Admin))
-    {
-        <Figlet Content="Student Dashboard" />
-        <Panel Title="Admin Dashboard" Border="BoxBorder.Rounded" Expand="true">
-            <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
-                <Rows>
-                    <Markup Content="@GetNameFullString()" Foreground="Color.Gold3_1" Decoration="Decoration.Bold"/>
-                    <Newline/>
-                    <Markup Content="Please select one of the options." Foreground="Color.White" Decoration="Decoration.Bold"/>
-                    <Spinner SpinnerType="Spinner.Known.BouncingBar"></Spinner>
-                    <TextButton Content="Manage Roles" BackgroundColor="@GetCurrentRoleColor()" OnClick="GoToManageRoles" />
-                    <TextButton Content="School Settings" BackgroundColor="@GetCurrentRoleColor()" OnClick="GoToSchoolSettings"/>
-                    <TextButton Content="Logout" BackgroundColor="Color.Red" OnClick="ReturnToHome"/>
-
-                </Rows>
-            </Align>
-        </Panel>
-    }
+                <TextButton Content="Save Changes" BackgroundColor="@Color.Green" OnClick="SaveClass"/>
+            </Rows>
+        </Align>
+    </Panel>
 }
 
 @code {
@@ -96,51 +77,80 @@ else
         return new AccountService(dbContext);
     }
 
-    private GradeService GetGradeService()
-    {
-        var dbContext = new ApplicationDbContext();
-        return new GradeService(dbContext);
-    }
-
     private TeacherService GetTeacherService()
     {
         var dbContext = new ApplicationDbContext();
         return new TeacherService(dbContext);
     }
-
+    private ClassService GetClassService()
+    {
+        var dbContext = new ApplicationDbContext();
+        return new ClassService(dbContext);
+    }
     private StudentService GetStudentService()
     {
         var dbContext = new ApplicationDbContext();
         return new StudentService(dbContext);
     }
 
-    private ClassService GetClassService()
-    {
-        var dbContext = new ApplicationDbContext();
-        return new ClassService(dbContext);
-    }
+    private List<string> TeacherNames = new();
+    private List<string> StudentOptions = new();
+    private List<string> StudentSelections = new();
 
-    private string GetUsername() => GetAccountService().GetUserById(UserId).Data.Username;
-
-    private string GetName()
-    {
-        var user = GetAccountService().GetUserById(UserId).Data;
-        return $"{user.FirstName} {user.LastName}";
-    }
-    private string GetNameFullString()
-    {
-        return $"Hello {GetName()}!";
-    }
-
-    private void ViewGradesButton()
-    {
-        Navigation.NavigateTo($"/Student/ViewGrades/{UserId}");
-    }
+    private string? SelectedTeacher;
 
 
     protected override void OnInitialized()
     {
         AuthenticateUser();
+        LoadStudents();
+        StudentSelections.Add("");
+
+        if (IsAuthenticated)
+            LoadTeachers();
+    }
+
+    private void LoadStudents()
+    {
+        var studentService = GetStudentService();
+        var studentsResult = studentService.GetAllStudents(); 
+
+        StudentOptions = studentsResult
+            .Select(s => $"{s.Id} - {s.FirstName} {s.LastName}")
+            .ToList();
+        
+    }
+
+    private void AddStudentSlot()
+    {
+        StudentSelections.Add("");
+    }
+
+    private void LoadTeachers()
+    {
+        var teacherService = GetTeacherService();
+        var teachers = teacherService.GetAllTeachers();
+
+        TeacherNames = teachers
+            .Select(t => $"{t.Id} - {t.FirstName} {t.LastName}")
+            .ToList();
+    }
+
+    private void SaveClass()
+    {
+        if (string.IsNullOrWhiteSpace(SelectedTeacher))
+            return; 
+
+        var teacherId = SelectedTeacher.Split(" - ")[0];
+
+        var studentIds = StudentSelections
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Select(x => Guid.Parse(x.Split(" - ")[0]))
+            .ToList();
+
+        var classService = GetClassService();
+        classService.CreateClass(Guid.Parse(teacherId), studentIds);
+
     }
 
     private void AuthenticateUser()
@@ -222,21 +232,6 @@ else
     protected Color GetCurrentRoleColor()
     {
         return GetRoleColor(UserRole);
-    }
-
-    private void GoToManageRoles()
-    {
-        Navigation.NavigateTo($"/Admin/ManageUsers/{UserId}");
-    }
-
-    private void GoToSchoolSettings()
-    {
-        Navigation.NavigateTo($"/Admin/SchoolSettings/{UserId}");
-    }
-
-    private void GoToDetails()
-    {
-        Navigation.NavigateTo($"/Details/{UserId}");
     }
 
     private void ReturnToHome()

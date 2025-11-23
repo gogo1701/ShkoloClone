@@ -22,5 +22,7 @@ namespace ShkoloClone.Models
             this.Subject = subject;
             Id = Guid.NewGuid();
         }
+
+
     }
 }

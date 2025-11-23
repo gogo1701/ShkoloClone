@@ -48,7 +48,15 @@ namespace ShkoloClone.Services
         /// <returns>List of students in the class</returns>
         public List<AppUser> GetStudentsByClass(Guid classId)
         {
-            return _dbContext.Classes.FirstOrDefault(x => x.Id == classId).Students;
+            var classObj = _dbContext.Classes.FirstOrDefault(x => x.Id == classId);
+            if (classObj == null || classObj.Students == null)
+            {
+                return new List<AppUser>();
+            }
+            return classObj.Students
+                .Select(studentId => _dbContext.Users.FirstOrDefault(user => user.Id == studentId))
+                .Where(user => user != null)
+                .ToList();
         }
 
         /// <summary>
@@ -119,7 +127,7 @@ namespace ShkoloClone.Services
         /// <returns>Result containing the class if found, or an error message</returns>
         public Result<Class> GetStudentClass(Guid studentId)
         {
-            Class Class = _dbContext.Classes.FirstOrDefault(x => x.Students.Contains(_dbContext.Users.FirstOrDefault(x => x.Id == studentId)));
+            Class Class = _dbContext.Classes.FirstOrDefault(x => x.Students.Contains(_dbContext.Users.FirstOrDefault(x => x.Id == studentId).Id));
             if (Class == null)
             {
                 return Result<Class>.Failure("Class doesn't exist");
@@ -138,7 +146,7 @@ namespace ShkoloClone.Services
         /// <returns>Result containing the teacher if found, or an error message</returns>
         public Result<AppUser> GetStudentTeacher(Guid studentId)
         {
-            Class Class = _dbContext.Classes.FirstOrDefault(x => x.Students.Contains(_dbContext.Users.FirstOrDefault(x => x.Id == studentId)));
+            Class Class = _dbContext.Classes.FirstOrDefault(x => x.Students.Contains(_dbContext.Users.FirstOrDefault(x => x.Id == studentId).Id));
             if(Class == null)
             {
                 return Result<AppUser>.Failure("Class doesn't exist");

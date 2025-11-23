@@ -107,7 +107,10 @@ namespace ShkoloClone.Services
 
             foreach (var student in students)
             {
-                List<Grade> studentGrades = _dbContext.Grades.Where(x => x.StudentId == student.Id).Where(x => x.Subject == subject).ToList();
+                List<Grade> studentGrades = _dbContext.Grades
+                    .Where(x => x.StudentId == student)
+                    .Where(x => x.Subject == subject)
+                    .ToList();
                 grades.AddRange(studentGrades);
             }
 
