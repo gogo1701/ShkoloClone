@@ -1,0 +1,179 @@
+﻿@namespace Counter.Components
+@using RazorConsole.Components
+@inject NavigationManager Navigation
+@using Spectre.Console
+@using Spinner = Spectre.Console.Spinner
+@using ShkoloClone.Services
+@using ShkoloClone.Data
+@using ShkoloClone.Models
+@using ShkoloClone.Enums
+@page "/authenticated/Classes"
+
+@if (IsLoading)
+{
+    <Panel Title="Loading" Border="BoxBorder.Rounded" Expand="true">
+        <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+            <Markup Content="Loading user information..." Foreground="@Color.Grey70" />
+        </Align>
+    </Panel>
+}
+else if (!IsAuthenticated)
+{
+    <Panel Title="Access Denied" Border="BoxBorder.Rounded" Expand="true">
+        <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+            <Rows>
+                <Markup Content="@ErrorMessage" Foreground="@Color.Red" />
+                <Newline />
+                <TextButton Content="Back to Home"
+                            OnClick="ReturnToHome"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.LightGreen" />
+            </Rows>
+        </Align>
+    </Panel>
+}
+else
+{
+    if (HasRole(AppUserEnum.Teacher) || HasRole(AppUserEnum.Admin))
+    {
+        <Figlet Content="Classes" />
+        <Panel Title="Classes" Border="BoxBorder.Rounded" Expand="true">
+            <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+                <Rows>
+                    <Markup Content="@GetNameFullString()" Foreground="Color.Gold3_1" Decoration="Decoration.Bold"/>
+                    <Newline />
+                    <Markup Content="Please select one of the options." Foreground="Color.White" Decoration="Decoration.Bold"/>
+                    <Spinner SpinnerType="Spinner.Known.BouncingBar"></Spinner>
+                    @foreach (Class schoolClass in GetClassService().GetClassesByTeacher(CurrentUser.Id))
+                    {
+                        <TextButton Content="@schoolClass.ToString()" BackgroundColor="Color.Green" OnClick="() => GoToClassStudents(schoolClass.Id)"></TextButton>
+                    }
+                </Rows>
+            </Align>
+        </Panel>
+    }
+}
+@code {
+    [Parameter]
+    public Guid UserId { get; set; }
+    public Guid ClassId { get; set; }
+
+    private bool IsLoading = true;
+    private bool IsAuthenticated = false;
+    private string ErrorMessage = string.Empty;
+    private AppUser? CurrentUser;
+    private AppUserEnum UserRole = AppUserEnum.Teacher;
+
+    // Temp DI fix
+    private AccountService GetAccountService()
+    {
+        var dbContext = new ApplicationDbContext();
+        return new AccountService(dbContext);
+    }
+
+    private GradeService GetGradeService()
+    {
+        var dbContext = new ApplicationDbContext();
+        return new GradeService(dbContext);
+    }
+
+    private TeacherService GetTeacherService()
+    {
+        var dbContext = new ApplicationDbContext();
+        return new TeacherService(dbContext);
+    }
+
+    private StudentService GetStudentService()
+    {
+        var dbContext = new ApplicationDbContext();
+        return new StudentService(dbContext);
+    }
+
+    private ClassService GetClassService()
+    {
+        var dbContext = new ApplicationDbContext();
+        return new ClassService(dbContext);
+    }
+
+    private string GetName()
+    {
+        var user = GetAccountService().GetUserById(UserId).Data;
+        return $"{user.FirstName} {user.LastName}";
+    }
+
+    private string GetNameFullString()
+    {
+        return $"Hello {GetName()}!";
+    }
+
+    private void GoToClassStudents(Guid classId)
+    {
+        Navigation.NavigateTo($"/Classes/{classId}");
+    }
+
+    protected override void OnInitialized()
+    {
+        AuthenticateUser();
+    }
+
+    private void AuthenticateUser()
+    {
+        IsLoading = true;
+        IsAuthenticated = false;
+        ErrorMessage = string.Empty;
+
+        try
+        {
+            var accountService = GetAccountService();
+
+            var userResult = accountService.GetUserById(UserId);
+
+            if (!userResult.IsSuccess || userResult.Data == null)
+            {
+                IsAuthenticated = false;
+                ErrorMessage = userResult.Message ?? "User not found. Please log in.";
+                IsLoading = false;
+                return;
+            }
+
+            CurrentUser = userResult.Data;
+
+            var roleResult = accountService.GetUserTypeById(UserId);
+
+            if (roleResult.IsSuccess && roleResult.Data != null)
+            {
+                UserRole = roleResult.Data;
+            }
+            else
+            {
+                UserRole = CurrentUser.UserType;
+            }
+
+            IsAuthenticated = true;
+        }
+        catch (Exception ex)
+        {
+            IsAuthenticated = false;
+            ErrorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    /// <summary>
+    /// Checks if the current user has a specific role
+    /// </summary>
+    /// <param name="role">The role to check</param>
+    /// <returns>True if user has the role, false otherwise</returns>
+    protected bool HasRole(AppUserEnum role)
+    {
+        return UserRole == role;
+    }
+
+    private void ReturnToHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

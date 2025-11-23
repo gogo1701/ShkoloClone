@@ -1,0 +1,154 @@
+﻿@* This is an authenticated page. Copy this for other pages that need authentication and authorization.*@
+
+@namespace Counter.Components
+@using RazorConsole.Components
+@inject NavigationManager Navigation
+@using Spectre.Console
+@using ShkoloClone.Services
+@using ShkoloClone.Data
+@using ShkoloClone.Models
+@using ShkoloClone.Enums
+@page "/authenticated/AddGrade/{User:Guid}"
+
+@if (IsLoading)
+{
+    <Panel Title="Loading" Border="BoxBorder.Rounded" Expand="true">
+        <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+            <Markup Content="Loading user information..." Foreground="@Color.Grey70" />
+        </Align>
+    </Panel>
+}
+else if (!IsAuthenticated)
+{
+    <Panel Title="Access Denied" Border="BoxBorder.Rounded" Expand="true">
+        <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+            <Rows>
+                <Markup Content="@ErrorMessage" Foreground="@Color.Red" />
+                <Newline />
+                <TextButton Content="Back to Home"
+                            OnClick="ReturnToHome"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.LightGreen" />
+            </Rows>
+        </Align>
+    </Panel>
+}
+else
+{
+    @if (HasRole(AppUserEnum.Teacher))
+    {
+        <Figlet Content="Classes" />
+
+        </Figlet>
+    }
+}
+
+@code {
+    [Parameter]
+    public Guid UserId { get; set; }
+
+    private bool IsLoading = true;
+    private bool IsAuthenticated = false;
+    private string ErrorMessage = string.Empty;
+    private AppUser? CurrentUser;
+    private AppUserEnum UserRole = AppUserEnum.Student;
+
+    // Temp DI fix
+    private AccountService GetAccountService()
+    {
+        var dbContext = new ApplicationDbContext();
+        return new AccountService(dbContext);
+    }
+
+    protected override void OnInitialized()
+    {
+        AuthenticateUser();
+    }
+
+    private void AuthenticateUser()
+    {
+        IsLoading = true;
+        IsAuthenticated = false;
+        ErrorMessage = string.Empty;
+
+        try
+        {
+            var accountService = GetAccountService();
+
+            var userResult = accountService.GetUserById(UserId);
+
+            if (!userResult.IsSuccess || userResult.Data == null)
+            {
+                IsAuthenticated = false;
+                ErrorMessage = userResult.Message ?? "User not found. Please log in.";
+                IsLoading = false;
+                return;
+            }
+
+            CurrentUser = userResult.Data;
+
+            var roleResult = accountService.GetUserTypeById(UserId);
+
+            if (roleResult.IsSuccess && roleResult.Data != null)
+            {
+                UserRole = roleResult.Data;
+            }
+            else
+            {
+                UserRole = CurrentUser.UserType;
+            }
+
+            IsAuthenticated = true;
+        }
+        catch (Exception ex)
+        {
+            IsAuthenticated = false;
+            ErrorMessage = $"An error occurred: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    /// <summary>
+    /// Checks if the current user has a specific role
+    /// </summary>
+    /// <param name="role">The role to check</param>
+    /// <returns>True if user has the role, false otherwise</returns>
+    protected bool HasRole(AppUserEnum role)
+    {
+        return UserRole == role;
+    }
+
+    /// <summary>
+    /// Gets the color associated with a role
+    /// </summary>
+    /// <param name="role">The role</param>
+    /// <returns>Color for the role</returns>
+    protected Color GetRoleColor(AppUserEnum role)
+    {
+        return role switch
+        {
+            AppUserEnum.Student => Color.Blue,
+            AppUserEnum.Teacher => Color.Green,
+            AppUserEnum.Admin => Color.Red,
+            _ => Color.White
+        };
+    }
+
+    /// <summary>
+    /// Gets the color for the current user's role
+    /// </summary>
+    /// <returns>Color for the current user's role</returns>
+    protected Color GetCurrentRoleColor()
+    {
+        return GetRoleColor(UserRole);
+    }
+
+    private void ReturnToHome()
+    {
+        Navigation.NavigateTo("/");
+    }
+}
+

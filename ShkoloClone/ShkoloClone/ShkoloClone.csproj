@@ -11,8 +11,4 @@
     <PackageReference Include="RazorConsole.Core" Version="0.2.0-alpha.20251122-d8272b4" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="UI\Pages\Teacher\" />
-  </ItemGroup>
-
 </Project>
