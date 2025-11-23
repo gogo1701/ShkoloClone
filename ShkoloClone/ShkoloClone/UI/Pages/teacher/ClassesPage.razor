@@ -7,7 +7,7 @@
 @using ShkoloClone.Data
 @using ShkoloClone.Models
 @using ShkoloClone.Enums
-@page "/authenticated/Classes"
+@page "/authenticated/Classes/{UserId:guid}"
 
 @if (IsLoading)
 {
@@ -42,12 +42,33 @@ else
                 <Rows>
                     <Markup Content="@GetNameFullString()" Foreground="Color.Gold3_1" Decoration="Decoration.Bold"/>
                     <Newline />
-                    <Markup Content="Please select one of the options." Foreground="Color.White" Decoration="Decoration.Bold"/>
-                    <Spinner SpinnerType="Spinner.Known.BouncingBar"></Spinner>
-                    @foreach (Class schoolClass in GetClassService().GetClassesByTeacher(CurrentUser.Id))
-                    {
-                        <TextButton Content="@schoolClass.ToString()" BackgroundColor="Color.Green" OnClick="() => GoToClassStudents(schoolClass.Id)"></TextButton>
+                    <Markup Content="Please select one of the classes below:" Foreground="Color.White" Decoration="Decoration.Bold"/>
+                    <Newline />
+                    @{
+                        var classes = GetClassService().GetClassesByTeacher(CurrentUser.Id);
                     }
+                    @if (classes.Count == 0)
+                    {
+                        <Markup Content="No classes assigned to you yet." Foreground="@Color.Yellow" />
+                    }
+                    else
+                    {
+                        @foreach (Class schoolClass in classes)
+                        {
+                            var className = string.IsNullOrWhiteSpace(schoolClass.Name) ? $"Class {schoolClass.Id}" : schoolClass.Name;
+                            var studentCount = schoolClass.Students?.Count ?? 0;
+                            var displayText = $"{className} ({studentCount} student{(studentCount != 1 ? "s" : "")})";
+                            <TextButton Content="@displayText" 
+                                       BackgroundColor="@Color.Green" 
+                                       FocusedColor="@Color.LightGreen"
+                                       OnClick="() => GoToClassStudents(schoolClass.Id)"></TextButton>
+                        }
+                    }
+                    <Newline />
+                    <TextButton Content="Back to Dashboard"
+                                OnClick="ReturnToDashboard"
+                                BackgroundColor="@Color.Grey"
+                                FocusedColor="@Color.White" />
                 </Rows>
             </Align>
         </Panel>
@@ -108,7 +129,12 @@ else
 
     private void GoToClassStudents(Guid classId)
     {
-        Navigation.NavigateTo($"/Classes/{classId}");
+        Navigation.NavigateTo($"/Teacher/ClassStudents/{UserId}/{classId}");
+    }
+
+    private void ReturnToDashboard()
+    {
+        Navigation.NavigateTo($"/Dashboard/{UserId}");
     }
 
     protected override void OnInitialized()

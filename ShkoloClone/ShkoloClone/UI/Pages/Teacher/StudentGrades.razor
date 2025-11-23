@@ -1,4 +1,4 @@
-﻿@* This is an authenticated page for viewing and managing students in a class.*@
+@* This is an authenticated page for viewing a student's grades.*@
 
 @namespace Counter.Components
 @using RazorConsole.Components
@@ -8,13 +8,13 @@
 @using ShkoloClone.Data
 @using ShkoloClone.Models
 @using ShkoloClone.Enums
-@page "/Teacher/ClassStudents/{UserId:guid}/{ClassId:guid}"
+@page "/Teacher/StudentGrades/{UserId:guid}/{StudentId:guid}"
 
 @if (IsLoading)
 {
     <Panel Title="Loading" Border="BoxBorder.Rounded" Expand="true">
         <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
-            <Markup Content="Loading class information..." Foreground="@Color.Grey70" />
+            <Markup Content="Loading student information..." Foreground="@Color.Grey70" />
         </Align>
     </Panel>
 }
@@ -48,14 +48,14 @@ else if (!HasRole(AppUserEnum.Teacher) && !HasRole(AppUserEnum.Admin))
         </Align>
     </Panel>
 }
-else if (CurrentClass == null)
+else if (Student == null)
 {
     <Panel Title="Error" Border="BoxBorder.Rounded" Expand="true">
         <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
             <Rows>
-                <Markup Content="Class not found or you don't have access to this class." Foreground="@Color.Red" />
+                <Markup Content="Student not found." Foreground="@Color.Red" />
                 <Newline />
-                <TextButton Content="Back to Classes"
+                <TextButton Content="Back"
                             OnClick="ReturnToClasses"
                             BackgroundColor="@Color.Green"
                             FocusedColor="@Color.LightGreen" />
@@ -65,39 +65,33 @@ else if (CurrentClass == null)
 }
 else
 {
-    <Figlet Content="@ClassName" />
-    <Panel Title="Class Information" Border="BoxBorder.Rounded" Expand="true">
+    <Figlet Content="Student Grades" />
+    <Panel Title="@($"{Student.FirstName} {Student.LastName}'s Grades")" Border="BoxBorder.Rounded" Expand="true">
         <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
             <Rows>
-                <Markup Content="@($"Class: {ClassName}")" Foreground="@Color.Gold3_1" Decoration="Decoration.Bold" />
-                <Markup Content="@($"Teacher: {TeacherName}")" Foreground="@Color.White" />
-                <Markup Content="@($"Students: {Students.Count}")" Foreground="@Color.White" />
-            </Rows>
-        </Align>
-    </Panel>
+                <Markup Content="@($"Student: {Student.FirstName} {Student.LastName}")" Foreground="@Color.Gold3_1" Decoration="Decoration.Bold" />
+                <Newline />
 
-    <Newline />
+                @{
+                    var gradesBySubject = GetStudentService().GetStudentGradesBySubject(StudentId);
+                }
 
-    <Panel Title="Students" Border="BoxBorder.Rounded" Expand="true">
-        <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
-            <Rows>
-                @if (Students.Count == 0)
+                @if (gradesBySubject.Count == 0)
                 {
-                    <Markup Content="No students in this class." Foreground="@Color.Yellow" />
+                    <Markup Content="No grades found for this student." Foreground="@Color.Yellow" />
                 }
                 else
                 {
-                    @foreach (var student in Students)
-                    {
-                        var studentGrades = GetStudentService().GetStudentGrades(student.Id);
-                        var gradeCount = studentGrades.Count;
-                        var displayText = $"{student.FirstName} {student.LastName} ({gradeCount} grade{(gradeCount != 1 ? "s" : "")})";
-                        
-                        <TextButton Content="@displayText"
-                                   BackgroundColor="@Color.Blue"
-                                   FocusedColor="@Color.LightSkyBlue1"
-                                   OnClick="() => ViewStudentGrades(student.Id)" />
-                    }
+                    <Grid Columns="2">
+                        <Markup Content="Subject" Foreground="@Color.Gold3_1" Decoration="Decoration.Bold" />
+                        <Markup Content="Grades" Foreground="@Color.Gold3_1" Decoration="Decoration.Bold" />
+
+                        @foreach (var kvp in gradesBySubject)
+                        {
+                            <Markup Content="@kvp.Key" Foreground="@Color.White" />
+                            <Markup Content="@string.Join(", ", kvp.Value.Select(g => g.Value.ToString("F2")))" Foreground="@Color.White" />
+                        }
+                    </Grid>
                 }
             </Rows>
         </Align>
@@ -108,11 +102,11 @@ else
     <Panel Title="Actions" Border="BoxBorder.Rounded" Expand="true">
         <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
             <Rows>
-                <TextButton Content="Add Grade to Student"
+                <TextButton Content="Add Grade"
                            OnClick="GoToAddGrade"
                            BackgroundColor="@Color.Green"
                            FocusedColor="@Color.LightGreen" />
-                <TextButton Content="Back to Classes"
+                <TextButton Content="Back"
                            OnClick="ReturnToClasses"
                            BackgroundColor="@Color.Grey"
                            FocusedColor="@Color.White" />
@@ -126,29 +120,20 @@ else
     public Guid UserId { get; set; }
 
     [Parameter]
-    public Guid ClassId { get; set; }
+    public Guid StudentId { get; set; }
 
     private bool IsLoading = true;
     private bool IsAuthenticated = false;
     private string ErrorMessage = string.Empty;
     private AppUser? CurrentUser;
     private AppUserEnum UserRole = AppUserEnum.Student;
-    private Class? CurrentClass;
-    private List<AppUser> Students = new();
-    private string ClassName = string.Empty;
-    private string TeacherName = string.Empty;
+    private AppUser? Student;
 
     // Temp DI fix
     private AccountService GetAccountService()
     {
         var dbContext = new ApplicationDbContext();
         return new AccountService(dbContext);
-    }
-
-    private ClassService GetClassService()
-    {
-        var dbContext = new ApplicationDbContext();
-        return new ClassService(dbContext);
     }
 
     private StudentService GetStudentService()
@@ -196,7 +181,7 @@ else
             }
 
             IsAuthenticated = true;
-            LoadClassData();
+            LoadStudentData();
         }
         catch (Exception ex)
         {
@@ -209,56 +194,22 @@ else
         }
     }
 
-    private void LoadClassData()
+    private void LoadStudentData()
     {
         try
         {
-            var classService = GetClassService();
-            var classResult = classService.GetClassById(ClassId);
+            var studentService = GetStudentService();
+            var studentResult = studentService.GetStudentById(StudentId);
 
-            if (!classResult.IsSuccess || classResult.Data == null)
+            if (studentResult.IsSuccess && studentResult.Data != null)
             {
-                CurrentClass = null;
-                return;
+                Student = studentResult.Data;
             }
-
-            CurrentClass = classResult.Data;
-
-            // Verify teacher has access to this class (unless admin)
-            if (UserRole != AppUserEnum.Admin && CurrentClass.TeacherId != CurrentUser.Id)
-            {
-                CurrentClass = null;
-                return;
-            }
-
-            // Load class name
-            ClassName = string.IsNullOrWhiteSpace(CurrentClass.Name) 
-                ? $"Class {CurrentClass.Id}" 
-                : CurrentClass.Name;
-
-            // Load teacher name
-            var teacherResult = classService.GetClassTeacher(ClassId);
-            if (teacherResult.IsSuccess && teacherResult.Data != null)
-            {
-                TeacherName = $"{teacherResult.Data.FirstName} {teacherResult.Data.LastName}";
-            }
-            else
-            {
-                TeacherName = "No teacher assigned";
-            }
-
-            // Load students
-            Students = classService.GetStudentsInClass(ClassId);
         }
         catch (Exception ex)
         {
-            ErrorMessage = $"Error loading class data: {ex.Message}";
+            ErrorMessage = $"Error loading student data: {ex.Message}";
         }
-    }
-
-    private void ViewStudentGrades(Guid studentId)
-    {
-        Navigation.NavigateTo($"/Teacher/StudentGrades/{UserId}/{studentId}");
     }
 
     private void GoToAddGrade()
@@ -291,3 +242,4 @@ else
         Navigation.NavigateTo("/");
     }
 }
+

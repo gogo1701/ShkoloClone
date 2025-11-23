@@ -90,12 +90,24 @@ namespace ShkoloClone.Services
         /// <returns>Result indicating success or failure</returns>
         public Result AddClassToSchool(Guid schoolId, Guid classId)
         {
-            Class Class = new Class(classId);
-            if (_dbContext.Schools.FirstOrDefault(x => x.Id == schoolId) == null)
+            var school = _dbContext.Schools.FirstOrDefault(x => x.Id == schoolId);
+            if (school == null)
             {
                 return Result.Failure("School not found");
             }
-            _dbContext.Schools.FirstOrDefault(x => x.Id == schoolId).ClassList.Add(Class);
+            
+            var existingClass = _dbContext.Classes.FirstOrDefault(x => x.Id == classId);
+            if (existingClass == null)
+            {
+                return Result.Failure("Class not found");
+            }
+            
+            if (school.ClassList.Any(c => c.Id == classId))
+            {
+                return Result.Failure("Class is already in this school");
+            }
+            
+            school.ClassList.Add(existingClass);
             _dbContext.SaveChanges();
             return Result.Success("Class added to school successfully");
         }

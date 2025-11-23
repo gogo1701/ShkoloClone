@@ -14,6 +14,16 @@ namespace ShkoloClone.Models
         public double Value {  get; set; }
         public string Subject { get; set; }
 
+        // Parameterless constructor for JSON deserialization
+        public Grade()
+        {
+            this.Id = Guid.NewGuid();
+            this.StudentId = Guid.Empty;
+            this.TeacherId = Guid.Empty;
+            this.Value = 0;
+            this.Subject = string.Empty;
+        }
+
         public Grade(Guid studentId, Guid teacherId, double value, string subject)
         {
             this.StudentId = studentId;
@@ -22,7 +32,5 @@ namespace ShkoloClone.Models
             this.Subject = subject;
             Id = Guid.NewGuid();
         }
-
-
     }
 }

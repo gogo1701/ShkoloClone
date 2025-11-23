@@ -54,9 +54,21 @@ else
     }
     else if (HasRole(AppUserEnum.Teacher))
     {
-        <Figlet Content="Student Dashboard" />
+        <Figlet Content="Teacher Dashboard" />
         <Panel Title="Teacher Dashboard" Border="BoxBorder.Rounded" Expand="true">
+            <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+                <Rows>
+                    <Markup Content="@GetNameFullString()" Foreground="Color.Gold3_1" Decoration="Decoration.Bold"/>
+                    <Newline/>
+                    <Markup Content="Please select one of the options." Foreground="Color.White" Decoration="Decoration.Bold"/>
+                    <Spinner SpinnerType="Spinner.Known.BouncingBar"></Spinner>
+                    <TextButton Content="View My Classes" BackgroundColor="@GetCurrentRoleColor()" OnClick="GoToClasses"/>
+                    <TextButton Content="Add Grade" BackgroundColor="Color.Green" OnClick="GoToAddGrade"/>
+                    <TextButton Content="View User Details" BackgroundColor="@GetCurrentRoleColor()" OnClick="GoToDetails"></TextButton>
+                    <TextButton Content="Logout" BackgroundColor="Color.Red" OnClick="ReturnToHome"/>
 
+                </Rows>
+            </Align>
         </Panel>
     }
     else if (HasRole(AppUserEnum.Admin))
@@ -237,6 +249,16 @@ else
     private void GoToDetails()
     {
         Navigation.NavigateTo($"/Details/{UserId}");
+    }
+
+    private void GoToClasses()
+    {
+        Navigation.NavigateTo($"/authenticated/Classes/{UserId}");
+    }
+
+    private void GoToAddGrade()
+    {
+        Navigation.NavigateTo($"/Teacher/AddGrade/{UserId}");
     }
 
     private void ReturnToHome()

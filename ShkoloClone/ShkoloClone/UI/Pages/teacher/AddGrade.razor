@@ -8,7 +8,7 @@
 @using ShkoloClone.Data
 @using ShkoloClone.Models
 @using ShkoloClone.Enums
-@page "/authenticated/AddGrade/{User:Guid}"
+@page "/Teacher/AddGrade/{UserId:guid}"
 
 @if (IsLoading)
 {
@@ -33,14 +33,73 @@ else if (!IsAuthenticated)
         </Align>
     </Panel>
 }
+else if (!HasRole(AppUserEnum.Teacher))
+{
+    <Panel Title="Access Denied" Border="BoxBorder.Rounded" Expand="true">
+        <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+            <Rows>
+                <Markup Content="Only teachers can access this page." Foreground="@Color.Red" />
+                <Newline />
+                <TextButton Content="Back to Dashboard"
+                            OnClick="ReturnToDashboard"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.LightGreen" />
+            </Rows>
+        </Align>
+    </Panel>
+}
 else
 {
-    @if (HasRole(AppUserEnum.Teacher))
-    {
-        <Figlet Content="Classes" />
+    <Figlet Content="Add Grade" />
+    <Panel Title="Add Grade" Border="BoxBorder.Rounded" Expand="true">
+        <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+            <Rows>
+                @if (!string.IsNullOrEmpty(Message))
+                {
+                    <Markup Content="@Message" Foreground="@(IsError ? Color.Red : Color.Green)" />
+                    <Newline />
+                }
 
-        </Figlet>
-    }
+                <Markup Content="Select Class:" Foreground="@Color.Grey70" />
+                <Select Options="@ClassOptions.ToArray()"
+                        Value="@SelectedClass"
+                        ValueChanged="@OnClassSelected"
+                        Placeholder="Select a class" />
+                <Newline />
+
+                @if (!string.IsNullOrEmpty(SelectedClass))
+                {
+                    <Markup Content="Select Student:" Foreground="@Color.Grey70" />
+                    <Select Options="@StudentOptions.ToArray()"
+                            @bind-Value="SelectedStudent"
+                            Placeholder="Select a student" />
+                    <Newline />
+
+                    <Markup Content="Subject:" Foreground="@Color.Grey70" />
+                    <TextInput Content="@Subject"
+                               ValueChanged="@((v) => Subject = v)"
+                               Placeholder="Enter subject name (e.g., Math, Science)" />
+                    <Newline />
+
+                    <Markup Content="Grade Value (2.00 - 6.00):" Foreground="@Color.Grey70" />
+                    <TextInput Content="@GradeValue"
+                               ValueChanged="@((v) => GradeValue = v)"
+                               Placeholder="Enter grade (e.g., 5.50)" />
+                    <Newline />
+
+                    <TextButton Content="Add Grade"
+                                OnClick="SaveGrade"
+                                BackgroundColor="@Color.Green"
+                                FocusedColor="@Color.LightGreen" />
+                }
+                <Newline />
+                <TextButton Content="Back to Dashboard"
+                            OnClick="ReturnToDashboard"
+                            BackgroundColor="@Color.Grey"
+                            FocusedColor="@Color.White" />
+            </Rows>
+        </Align>
+    </Panel>
 }
 
 @code {
@@ -53,11 +112,32 @@ else
     private AppUser? CurrentUser;
     private AppUserEnum UserRole = AppUserEnum.Student;
 
+    private List<string> ClassOptions = new();
+    private List<string> StudentOptions = new();
+    private string? SelectedClass;
+    private string? SelectedStudent;
+    private string Subject = string.Empty;
+    private string GradeValue = string.Empty;
+    private string Message = string.Empty;
+    private bool IsError = false;
+
     // Temp DI fix
     private AccountService GetAccountService()
     {
         var dbContext = new ApplicationDbContext();
         return new AccountService(dbContext);
+    }
+
+    private ClassService GetClassService()
+    {
+        var dbContext = new ApplicationDbContext();
+        return new ClassService(dbContext);
+    }
+
+    private TeacherService GetTeacherService()
+    {
+        var dbContext = new ApplicationDbContext();
+        return new TeacherService(dbContext);
     }
 
     protected override void OnInitialized()
@@ -99,6 +179,7 @@ else
             }
 
             IsAuthenticated = true;
+            LoadClasses();
         }
         catch (Exception ex)
         {
@@ -108,6 +189,116 @@ else
         finally
         {
             IsLoading = false;
+        }
+    }
+
+    private void LoadClasses()
+    {
+        if (CurrentUser == null) return;
+
+        var classService = GetClassService();
+        var classes = classService.GetClassesByTeacher(CurrentUser.Id);
+
+        ClassOptions = classes
+            .Select(c => 
+            {
+                var className = string.IsNullOrWhiteSpace(c.Name) ? $"Class {c.Id}" : c.Name;
+                return $"{c.Id} - {className}";
+            })
+            .ToList();
+    }
+
+    private void OnClassSelected(string? selectedClass)
+    {
+        SelectedClass = selectedClass;
+        SelectedStudent = null;
+        StudentOptions.Clear();
+
+        if (string.IsNullOrEmpty(selectedClass))
+            return;
+
+        try
+        {
+            var classId = Guid.Parse(selectedClass.Split(" - ")[0]);
+            var classService = GetClassService();
+            var students = classService.GetStudentsInClass(classId);
+
+            StudentOptions = students
+                .Select(s => $"{s.Id} - {s.FirstName} {s.LastName}")
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Message = $"Error loading students: {ex.Message}";
+            IsError = true;
+        }
+    }
+
+    private void SaveGrade()
+    {
+        Message = string.Empty;
+        IsError = false;
+
+        if (string.IsNullOrEmpty(SelectedClass))
+        {
+            Message = "Please select a class.";
+            IsError = true;
+            return;
+        }
+
+        if (string.IsNullOrEmpty(SelectedStudent))
+        {
+            Message = "Please select a student.";
+            IsError = true;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(Subject))
+        {
+            Message = "Please enter a subject.";
+            IsError = true;
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(GradeValue) || !double.TryParse(GradeValue, out double grade))
+        {
+            Message = "Please enter a valid grade value (2.00 - 6.00).";
+            IsError = true;
+            return;
+        }
+
+        if (grade < 2.00 || grade > 6.00)
+        {
+            Message = "Grade must be between 2.00 and 6.00.";
+            IsError = true;
+            return;
+        }
+
+        try
+        {
+            var studentId = Guid.Parse(SelectedStudent.Split(" - ")[0]);
+            var teacherService = GetTeacherService();
+            var result = teacherService.AddGradeForStudent(studentId, CurrentUser.Id, grade, Subject);
+
+            if (result.IsSuccess)
+            {
+                Message = $"Grade {grade} added successfully for {Subject}!";
+                IsError = false;
+                // Clear form fields but keep class selected
+                Subject = string.Empty;
+                GradeValue = string.Empty;
+                SelectedStudent = null;
+            }
+            else
+            {
+                Message = result.Message;
+                IsError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Message = $"An error occurred: {ex.Message}";
+            IsError = true;
         }
     }
 
@@ -144,6 +335,11 @@ else
     protected Color GetCurrentRoleColor()
     {
         return GetRoleColor(UserRole);
+    }
+
+    private void ReturnToDashboard()
+    {
+        Navigation.NavigateTo($"/Dashboard/{UserId}");
     }
 
     private void ReturnToHome()

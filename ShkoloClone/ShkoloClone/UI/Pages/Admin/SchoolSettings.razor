@@ -159,7 +159,14 @@ else
                     {
                         @foreach (var classItem in SchoolClasses)
                         {
-                            <Markup Content="@($"Class ID: {classItem.Id}")" Foreground="@Color.White" />
+                            var className = string.IsNullOrWhiteSpace(classItem.Name) ? $"Class {classItem.Id}" : classItem.Name;
+                            var studentCount = classItem.Students?.Count ?? 0;
+                            var teacherResult = GetClassService().GetClassTeacher(classItem.Id);
+                            var teacherName = teacherResult.IsSuccess && teacherResult.Data != null 
+                                ? $"{teacherResult.Data.FirstName} {teacherResult.Data.LastName}" 
+                                : "No teacher assigned";
+                            
+                            <Markup Content="@($"{className} - Teacher: {teacherName} - Students: {studentCount}")" Foreground="@Color.White" />
                         }
                     }
                 </Rows>
@@ -213,6 +220,12 @@ else
     {
         var dbContext = new ApplicationDbContext();
         return new SchoolService(dbContext);
+    }
+
+    private ClassService GetClassService()
+    {
+        var dbContext = new ApplicationDbContext();
+        return new ClassService(dbContext);
     }
 
     protected override void OnInitialized()
@@ -435,5 +448,6 @@ else
         Navigation.NavigateTo("/");
     }
 }
+
 
 

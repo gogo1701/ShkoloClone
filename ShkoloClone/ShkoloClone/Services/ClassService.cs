@@ -20,12 +20,18 @@ namespace ShkoloClone.Services
         /// <summary>
         /// Creates a new class with a teacher and list of students
         /// </summary>
+        /// <param name="name">The name of the class</param>
         /// <param name="teacherId">The id of the teacher assigned to the class</param>
         /// <param name="studentIds">List of student id to add to the class</param>
         /// <returns>Result containing the created class ID on success, or an error message on failure</returns>
-        public Result<Guid> CreateClass(Guid teacherId, List<Guid> students)
+        public Result<Guid> CreateClass(string name, Guid teacherId, List<Guid> students)
         {
-            Class Class = new Class(students, teacherId);
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                return Result<Guid>.Failure("Class name cannot be empty");
+            }
+            
+            Class Class = new Class(name, students, teacherId);
             _dbContext.Classes.Add(Class);
             _dbContext.SaveChanges();
             return Result<Guid>.Success("Class created successfully", Class.Id);

@@ -39,11 +39,25 @@ else
     <Panel Title="Add Class" Border="BoxBorder.Rounded" Expand="true">
         <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
             <Rows>
+                @if (!string.IsNullOrEmpty(Message))
+                {
+                    <Markup Content="@Message" Foreground="@(IsError ? Color.Red : Color.Green)" />
+                    <Newline />
+                }
+                
+                <Markup Content="Class Name:" Foreground="@Color.Grey70" />
+                <TextInput Content="@ClassName"
+                           ValueChanged="@((v) => ClassName = v)"
+                           Placeholder="Enter class name (e.g., Grade 5A, Math 101)" />
+                <Newline />
+                
+                <Markup Content="Select Teacher:" Foreground="@Color.Grey70" />
                 <Select Options="@TeacherNames.ToArray()"
                         @bind-Value="SelectedTeacher"
                         Placeholder="Select a teacher" />
                 <Newline />
                 
+                <Markup Content="Add Students:" Foreground="@Color.Grey70" />
                 @for (int i = 0; i < StudentSelections.Count; i++)
                 {
                     <Select Options="@StudentOptions.ToArray()"
@@ -52,9 +66,24 @@ else
                 }
 
                 <TextButton Content="Add Another Student"
-                            OnClick="AddStudentSlot" />
+                            OnClick="AddStudentSlot"
+                            BackgroundColor="@Color.Blue"
+                            FocusedColor="@Color.LightSkyBlue1" />
+                <Newline />
 
-                <TextButton Content="Save Changes" BackgroundColor="@Color.Green" OnClick="SaveClass"/>
+                <TextButton Content="Create Class" 
+                            BackgroundColor="@Color.Green" 
+                            FocusedColor="@Color.LightGreen"
+                            OnClick="SaveClass"/>
+                <Newline />
+                <TextButton Content="Back to School Settings"
+                            OnClick="ReturnToSchoolSettings"
+                            BackgroundColor="@Color.Grey"
+                            FocusedColor="@Color.White" />
+                <TextButton Content="Back to Dashboard"
+                            OnClick="ReturnToDashboard"
+                            BackgroundColor="@Color.Blue"
+                            FocusedColor="@Color.LightSkyBlue1" />
             </Rows>
         </Align>
     </Panel>
@@ -98,6 +127,9 @@ else
     private List<string> StudentSelections = new();
 
     private string? SelectedTeacher;
+    private string ClassName = string.Empty;
+    private string Message = string.Empty;
+    private bool IsError = false;
 
 
     protected override void OnInitialized()
@@ -138,19 +170,66 @@ else
 
     private void SaveClass()
     {
+        Message = string.Empty;
+        IsError = false;
+
+        if (string.IsNullOrWhiteSpace(ClassName))
+        {
+            Message = "Please enter a class name.";
+            IsError = true;
+            return;
+        }
+
         if (string.IsNullOrWhiteSpace(SelectedTeacher))
-            return; 
+        {
+            Message = "Please select a teacher.";
+            IsError = true;
+            return;
+        }
 
-        var teacherId = SelectedTeacher.Split(" - ")[0];
+        try
+        {
+            var teacherId = SelectedTeacher.Split(" - ")[0];
 
-        var studentIds = StudentSelections
-            .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Select(x => Guid.Parse(x.Split(" - ")[0]))
-            .ToList();
+            var studentIds = StudentSelections
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select(x => Guid.Parse(x.Split(" - ")[0]))
+                .ToList();
 
-        var classService = GetClassService();
-        classService.CreateClass(Guid.Parse(teacherId), studentIds);
+            var classService = GetClassService();
+            var result = classService.CreateClass(ClassName, Guid.Parse(teacherId), studentIds);
 
+            if (result.IsSuccess)
+            {
+                Message = $"Class '{ClassName}' created successfully! Click 'Back to School Settings' to return.";
+                IsError = false;
+                // Clear form
+                ClassName = string.Empty;
+                SelectedTeacher = null;
+                StudentSelections.Clear();
+                StudentSelections.Add("");
+            }
+            else
+            {
+                Message = result.Message;
+                IsError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Message = $"An error occurred: {ex.Message}";
+            IsError = true;
+        }
+    }
+
+    private void ReturnToSchoolSettings()
+    {
+        Navigation.NavigateTo($"/Admin/SchoolSettings/{UserId}");
+    }
+
+    private void ReturnToDashboard()
+    {
+        Navigation.NavigateTo($"/Dashboard/{UserId}");
     }
 
     private void AuthenticateUser()
