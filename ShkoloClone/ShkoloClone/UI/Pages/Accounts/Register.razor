@@ -1,0 +1,89 @@
+﻿@namespace Counter.Components
+@using RazorConsole.Components
+@inject NavigationManager Navigation
+@using Spectre.Console
+@page "/Register"
+
+<Figlet Content="Register" />
+<Newline />
+
+<Panel Title="Create Account" Border="BoxBorder.Rounded" Expand="true">
+    <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
+        <Rows>
+            <Markup Content="Fill in the details below" Foreground="@Color.Grey70" />
+            <Newline />
+
+            <!-- Username -->
+            <TextInput Content="@UserName"
+                       ValueChanged="@((v) => UserName = v)"
+                       Placeholder="Username" />
+            <Newline />
+
+            <!-- Password -->
+            <TextInput Content="@Password"
+                       ValueChanged="@((v) => Password = v)"
+                       Placeholder="Password" />
+            <Newline />
+
+            <!-- First Name -->
+            <TextInput Content="@FirstName"
+                       ValueChanged="@((v) => FirstName = v)"
+                       Placeholder="First Name" />
+            <Newline />
+
+            <!-- Last Name -->
+            <TextInput Content="@LastName"
+                       ValueChanged="@((v) => LastName = v)"
+                       Placeholder="Last Name" />
+            <Newline />
+
+            <!-- Phone Number -->
+            <TextInput Content="@PhoneNumber"
+                       ValueChanged="@((v) => PhoneNumber = v)"
+                       Placeholder="Phone Number" />
+            <Newline />
+
+            <!-- Address (optional) -->
+            <TextInput Content="@Address"
+                       ValueChanged="@((v) => Address = v)"
+                       Placeholder="Address (Optional)" />
+            <Newline />
+
+            <!-- Register Button -->
+            <TextButton Content="Register"
+                        OnClick="RegisterUser"
+                        BackgroundColor="@Color.Blue"
+                        FocusedColor="@Color.LightSkyBlue1" />
+
+            <Newline />
+
+            <!-- Back -->
+            <TextButton Content="Back to Home"
+                        OnClick="Return"
+                        BackgroundColor="@Color.Green"
+                        FocusedColor="@Color.LightGreen" />
+        </Rows>
+    </Align>
+</Panel>
+
+<Newline />
+<Markup Content="Press Tab to navigate • Enter to select • Ctrl+C to exit" Foreground="@Color.Grey58" />
+
+@code {
+    string UserName = string.Empty;
+    string Password = string.Empty;
+    string FirstName = string.Empty;
+    string LastName = string.Empty;
+    string PhoneNumber = string.Empty;
+    string Address = string.Empty; 
+
+    private void RegisterUser()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+    private void Return()
+    {
+        Navigation.NavigateTo("/");
+    }
+}
