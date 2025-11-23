@@ -99,6 +99,7 @@ namespace ShkoloClone.Services
             }
             Grade grade = new Grade(studentId,teacherId, value, subject);
             _dbContext.Grades.Add(grade);
+            _dbContext.SaveChanges();
             Result<Guid> result = Result<Guid>.Success("Grade added succesfully!", grade.Id);
             return result;
         }

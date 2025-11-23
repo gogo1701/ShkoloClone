@@ -18,58 +18,17 @@ namespace ShkoloClone.Services
         }
 
         /// <summary>
-        /// Adds a grade for a student
-        /// </summary>
-        /// <param name="studentId">The student id</param>
-        /// <param name="value">The grade value</param>
-        /// <param name="subject">The subject name</param>
-        /// <returns>Result containing the grade id on success, or an error message</returns>
-        public Result<Guid> AddGrade(Guid studentId, double value, string subject)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Adds a grade to all students in a class
-        /// </summary>
-        /// <param name="classId">The class id</param>
-        /// <param name="value">The grade value</param>
-        /// <param name="subject">The subject name</param>
-        /// <returns>Result indicating success or failure</returns>
-        public Result AddGradeToClass(Guid classId, double value, string subject)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Updates a grade
-        /// </summary>
-        /// <param name="gradeId">The grade id</param>
-        /// <param name="newValue">The new grade value</param>
-        /// <returns>Result indicating success or failure</returns>
-        public Result UpdateGrade(Guid gradeId, double newValue)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Deletes a grade
-        /// </summary>
-        /// <param name="gradeId">The grade id</param>
-        /// <returns>Result indicating success or failure</returns>
-        public Result DeleteGrade(Guid gradeId)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
         /// Gets a grade by id
         /// </summary>
         /// <param name="gradeId">The grade id</param>
         /// <returns>Result containing the grade if found, or an error message</returns>
         public Result<Grade> GetGradeById(Guid gradeId)
         {
-            throw new NotImplementedException();
+            if (_dbContext.Grades.FirstOrDefault(x => x.Id ==  gradeId) == null)
+            {
+                return Result<Grade>.Failure("Grade doesn't exist");
+            }
+            return Result<Grade>.Success("Grade successfully removed");
         }
 
         /// <summary>
@@ -79,7 +38,7 @@ namespace ShkoloClone.Services
         /// <returns>List of grades for the student</returns>
         public List<Grade> GetGradesByStudent(Guid studentId)
         {
-            throw new NotImplementedException();
+            return _dbContext.Grades.Where(x => x.StudentId == studentId).ToList();
         }
 
         /// <summary>
@@ -89,7 +48,7 @@ namespace ShkoloClone.Services
         /// <returns>Dictionary of subjects with their grades</returns>
         public Dictionary<string, List<Grade>> GetGradesByStudentGroupedBySubject(Guid studentId)
         {
-            throw new NotImplementedException();
+            return _dbContext.Grades.Where(x => x.StudentId == studentId).GroupBy(x => x.Subject).ToDictionary(group => group.Key, group => group.ToList());
         }
 
         /// <summary>
@@ -99,8 +58,31 @@ namespace ShkoloClone.Services
         /// <returns>Dictionary of students with their grades by subject</returns>
         public Dictionary<AppUser, Dictionary<string, List<Grade>>> GetGradesByStudents(List<Guid> studentIds)
         {
-            throw new NotImplementedException();
+            var students = _dbContext.Users
+                .Where(u => studentIds.Contains(u.Id))
+                .ToList();
+
+            var grades = _dbContext.Grades
+                .Where(g => studentIds.Contains(g.StudentId))
+                .ToList();
+
+            var result = new Dictionary<AppUser, Dictionary<string, List<Grade>>>();
+
+            foreach (var student in students)
+            {
+                var studentGrades = grades
+                    .Where(g => g.StudentId == student.Id)
+                    .GroupBy(g => g.Subject)
+                    .ToDictionary(
+                        g => g.Key,
+                        g => g.ToList()
+                    );
+                result.Add(student, studentGrades);
+            }
+
+            return result;
         }
+
 
         /// <summary>
         /// Gets all grades for a subject
@@ -109,7 +91,7 @@ namespace ShkoloClone.Services
         /// <returns>List of grades for the subject</returns>
         public List<Grade> GetGradesBySubject(string subject)
         {
-            throw new NotImplementedException();
+            return _dbContext.Grades.Where(x => x.Subject == subject).ToList();
         }
 
         /// <summary>
@@ -120,7 +102,16 @@ namespace ShkoloClone.Services
         /// <returns>List of grades for the subject in the class</returns>
         public List<Grade> GetGradesByClassAndSubject(Guid classId, string subject)
         {
-            throw new NotImplementedException();
+            List<Grade> grades = new List<Grade>();
+            var students = _dbContext.Classes.FirstOrDefault(x => x.Id == classId).Students;
+
+            foreach (var student in students)
+            {
+                List<Grade> studentGrades = _dbContext.Grades.Where(x => x.StudentId == student.Id).Where(x => x.Subject == subject).ToList();
+                grades.AddRange(studentGrades);
+            }
+
+            return grades;
         }
 
         /// <summary>
@@ -131,7 +122,13 @@ namespace ShkoloClone.Services
         /// <returns>Result containing the average grade, or an error message</returns>
         public Result<double> GetAverageGradeBySubject(Guid studentId, string subject)
         {
-            throw new NotImplementedException();
+            double result = _dbContext.Grades.Where(x => x.StudentId == studentId).Where(x => x.Subject == subject).Sum(x => x.Value) / _dbContext.Grades.Where(x => x.StudentId == studentId).Where(x => x.Subject == subject).Count();
+
+            if (result > 6 || result < 2)
+            {
+                return Result<double>.Failure("Average is not correct");
+            }
+            return Result<double>.Success("Average is calculated correctly!", result);
         }
 
         /// <summary>
@@ -140,9 +137,13 @@ namespace ShkoloClone.Services
         /// <param name="studentId">The student id</param>
         /// <returns>Result containing the overall average, or an error message</returns>
         public Result<double> GetOverallAverageGrade(Guid studentId)
-
         {
-            throw new NotImplementedException();
+            double result = _dbContext.Grades.Where(x => x.StudentId == studentId).Sum(x => x.Value) / _dbContext.Grades.Where(x => x.StudentId == studentId).Count();
+            if (result > 6 || result < 2)
+            {
+                return Result<double>.Failure("Average is not correct");
+            }
+            return Result<double>.Success("Average is calculated correctly!", result);
         }
 
         /// <summary>
@@ -151,7 +152,7 @@ namespace ShkoloClone.Services
         /// <returns>List of all grades</returns>
         public List<Grade> GetAllGrades()
         {
-            throw new NotImplementedException();
+            return _dbContext.Grades;
         }
     }
 }

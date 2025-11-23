@@ -17,5 +17,10 @@ namespace ShkoloClone.Models
             this.Students = students;
             this.TeacherId = teacherId;
         }
+        public Class(Guid Id)
+        {
+            this.Id = Id;
+            Students = new List<AppUser>();
+        }
     }
 }

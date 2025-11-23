@@ -148,7 +148,16 @@ namespace ShkoloClone.Services
         public Result<AppUser> UpdateUserProfile(Guid userId, string? firstName, string? lastName, string? phoneNumber,
             string? address)
         {
-            throw new NotImplementedException();
+            AppUser user = _dbContext.Users.FirstOrDefault(x => x.Id == userId);
+            _dbContext.Users.FirstOrDefault(x => x.Id == userId).FirstName = firstName;
+            _dbContext.Users.FirstOrDefault(x => x.Id == userId).LastName = lastName;
+            _dbContext.Users.FirstOrDefault(x => x.Id == userId).PhoneNumber = phoneNumber;
+            _dbContext.Users.FirstOrDefault(x => x.Id == userId).Address = address;
+            user.FirstName = firstName;
+            user.LastName = lastName;
+            user.PhoneNumber = phoneNumber;
+            user.Address = address;
+            return Result<AppUser>.Success("User successfully updated", user);
         }
 
         /// <summary>
@@ -160,7 +169,17 @@ namespace ShkoloClone.Services
         /// <returns>Result indicating success or failure</returns>
         public Result ChangePassword(Guid userId, string oldPassword, string newPassword)
         {
-            throw new NotImplementedException();
+            if (_dbContext.Users.FirstOrDefault(x => x.Id == userId) == null)
+            {
+                return Result.Failure("User not found");
+            }
+            if (_dbContext.Users.FirstOrDefault(x => x.Id == userId).PasswordHash == Hash(oldPassword))
+            {
+                _dbContext.Users.FirstOrDefault(x => x.Id == userId).PasswordHash = Hash(newPassword);
+                return Result.Success("Password changed successfully");
+            }
+            return Result.Failure("Password is wrong");
+            _dbContext.SaveChanges(); 
         }
 
         /// <summary>
@@ -192,7 +211,7 @@ namespace ShkoloClone.Services
         /// <returns>List of users of the specified type</returns>
         public List<AppUser> GetUsersByType(AppUserEnum userType)
         {
-            throw new NotImplementedException();
+            return _dbContext.Users.Where(x => x.UserType == userType).ToList();
         }
 
         /// <summary>
