@@ -23,7 +23,7 @@ namespace ShkoloClone.Services
         /// <param name="teacherId">The id of the teacher assigned to the class</param>
         /// <param name="studentIds">List of student id to add to the class</param>
         /// <returns>Result containing the created class ID on success, or an error message on failure</returns>
-        public Result<Guid> CreateClass(Guid teacherId, List<AppUser> students)
+        public Result<Guid> CreateClass(Guid teacherId, List<Guid> students)
         {
             Class Class = new Class(students, teacherId);
             _dbContext.Classes.Add(Class);
@@ -73,7 +73,7 @@ namespace ShkoloClone.Services
         public Result<Class> GetClassByStudent(Guid studentId)
         {
             AppUser user = _dbContext.Users.FirstOrDefault(x => x.Id == studentId);
-            Class Class = _dbContext.Classes.FirstOrDefault(x => x.Students.Contains(user));
+            Class Class = _dbContext.Classes.FirstOrDefault(x => x.Students.Contains(user.Id));
             if (_dbContext.Users.FirstOrDefault(x => x.Id == studentId) == null)
             {
                 return Result<Class>.Failure("Student doesn't exist");
@@ -102,7 +102,7 @@ namespace ShkoloClone.Services
                 return Result.Failure("Class doesn't exist");
             }
             AppUser user = _dbContext.Users.FirstOrDefault(y => y.Id == studentId);
-            _dbContext.Classes.FirstOrDefault(x => x.Id == studentId).Students.Add(user);
+            _dbContext.Classes.FirstOrDefault(x => x.Id == studentId).Students.Add(user.Id);
             _dbContext.SaveChanges();
             return Result.Success("Student added successfully");
         }
@@ -124,7 +124,7 @@ namespace ShkoloClone.Services
                 return Result.Failure("Class doesn't exist");
             }
             AppUser user = _dbContext.Users.FirstOrDefault(y => y.Id == studentId);
-            _dbContext.Classes.FirstOrDefault(x => x.Id == studentId).Students.Remove(user);
+            _dbContext.Classes.FirstOrDefault(x => x.Id == studentId).Students.Remove(user.Id);
             _dbContext.SaveChanges();
             return Result.Success("Student added successfully");
         }
@@ -168,7 +168,7 @@ namespace ShkoloClone.Services
             {
                 users.Add(_dbContext.Users.FirstOrDefault(x => x.Id == id));
             }
-            _dbContext.Classes.FirstOrDefault(x => x.Id == classId).Students = users;
+            _dbContext.Classes.FirstOrDefault(x => x.Id == classId).Students = users.Select(x => x.Id).ToList();
             _dbContext.SaveChanges();
             return Result.Success();
         }
@@ -198,7 +198,7 @@ namespace ShkoloClone.Services
         /// <returns>List of students in the class</returns>
         public List<AppUser> GetStudentsInClass(Guid classId)
         {
-            return _dbContext.Classes.FirstOrDefault(x => x.Id == classId).Students;
+            return _dbContext.Classes.FirstOrDefault(x => x.Id == classId).Students.Select( x => _dbContext.Users.FirstOrDefault(y => y.Id == x)).ToList();
         }
 
         /// <summary>

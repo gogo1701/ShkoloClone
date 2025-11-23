@@ -77,6 +77,7 @@ else
 
     @if (SelectedSchool != null)
     {
+        <Figlet Content="@SelectedSchool.SchoolName" />
         <Panel Title="School Information" Border="BoxBorder.Rounded" Expand="true">
             <Align Horizontal="HorizontalAlignment.Center" Vertical="VerticalAlignment.Middle">
                 <Rows>
@@ -162,6 +163,10 @@ else
                         }
                     }
                 </Rows>
+                <TextButton Content="Add Class"
+                            OnClick="GoToAddClass"
+                            BackgroundColor="@Color.Green"
+                            FocusedColor="@Color.LightGreen" />
             </Align>
         </Panel>
     }
@@ -418,6 +423,11 @@ else
     private void ReturnToAuthenticated()
     {
         Navigation.NavigateTo($"/authenticated/{UserId}");
+    }
+
+    private void GoToAddClass()
+    {
+        Navigation.NavigateTo($"/Admin/SchoolSettings/AddClass/{UserId}");
     }
 
     private void ReturnToHome()
