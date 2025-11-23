@@ -47,7 +47,7 @@ namespace ShkoloClone.Services
             switch (type)
             {
                 case "student": appUser = AppUserEnum.Student; break;
-                case "teacher": appUser = AppUserEnum.Student; break;
+                case "teacher": appUser = AppUserEnum.Teacher; break;
             }
             if (appUser == AppUserEnum.Student)
             {
