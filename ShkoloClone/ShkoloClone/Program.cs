@@ -1,4 +1,5 @@
 ﻿using ShkoloClone.Data;
+using ShkoloClone.User_Interface;
 
 namespace ShkoloClone
 {
@@ -9,6 +10,9 @@ namespace ShkoloClone
             ApplicationDbContext application = new();
 
             application.SaveChanges();
+
+            LogInOrSignUpUI.LogInUI();
+
         }
     }
 }
