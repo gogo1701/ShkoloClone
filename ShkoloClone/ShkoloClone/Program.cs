@@ -6,6 +6,7 @@ using ShkoloClone.Data;
 using ShkoloClone.Models;
 using ShkoloClone.User_Interface;
 using Counter.Components;
+using FileExplorer.Components;
 
 namespace ShkoloClone
 {
@@ -13,8 +14,8 @@ namespace ShkoloClone
     {
         static async Task Main(string[] args)
         {
-            var hostBuilder = Host.CreateDefaultBuilder(args).UseRazorConsole<HomePage>();
-   
+            var hostBuilder = Host.CreateDefaultBuilder(args).UseRazorConsole<App>();
+            
             var host = hostBuilder.Build();
             await host.RunAsync();
         }
