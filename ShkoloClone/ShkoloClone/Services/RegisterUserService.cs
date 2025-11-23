@@ -22,10 +22,13 @@ namespace ShkoloClone.Services
             if (appUserType == AppUserEnum.Student)
             {
                 Student student = new Student(userName, email, password, firstName, lastName, phoneNumber, address);
+                _dbContext.Users.Add(student);
+                _dbContext.SaveChanges();
             }
             else
             {
                 Teacher teacher = new Teacher(userName, email, password, firstName, lastName, phoneNumber, address);
+                _dbContext.Users.Add(teacher);
                 _dbContext.SaveChanges();
             }
         }
