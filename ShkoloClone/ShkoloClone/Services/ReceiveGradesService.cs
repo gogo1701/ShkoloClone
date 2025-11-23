@@ -22,7 +22,7 @@ namespace ShkoloClone.Services
 
         public Dictionary<Student, Dictionary<string, List<Grade>>> GetGradesByClass(List<Guid> students)
         {
-            var classStudents = _dbContext.Students
+            var classStudents = _dbContext.Users
                 .Where(s => students.Contains(s.Id))
                 .ToList();
 

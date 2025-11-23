@@ -11,57 +11,23 @@ namespace ShkoloClone.Services
 {
     public class RegisterUserService
     {
-        private readonly ApplicationDbContext _dbContext;
+        private  ApplicationDbContext _dbContext;
 
         public RegisterUserService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }
-        public Guid Register(out AppUserEnum appUser)
-        {
-        
-            Console.WriteLine("Username:");
-            string username = Console.ReadLine();
-
-            Console.WriteLine("Email:");
-            string email = Console.ReadLine();
-
-            Console.WriteLine("Password:");
-            string password = Console.ReadLine();
-
-            Console.WriteLine("FirstName:");
-            string firstName = Console.ReadLine();
-
-            Console.WriteLine("LastName:");
-            string lastName = Console.ReadLine();
-
-            Console.WriteLine("Phone Number:");
-            string phoneNumber = Console.ReadLine();
-
-            Console.WriteLine("(Not Required) Address:");
-            string? address = Console.ReadLine();
-
-            Console.WriteLine("student or teacher?");
-            string type = Console.ReadLine();
-            appUser = AppUserEnum.Admin;
-            switch (type)
+        public void Register(string userName, string email, string password, string firstName, string lastName, string phoneNumber, string? address, AppUserEnum appUserType)
+        { 
+            if (appUserType == AppUserEnum.Student)
             {
-                case "student": appUser = AppUserEnum.Student; break;
-                case "teacher": appUser = AppUserEnum.Teacher; break;
-            }
-            if (appUser == AppUserEnum.Student)
-            {
-                Student student = new Student(username, email, password, firstName, lastName, phoneNumber, address);
-
-                return student.Id;
+                Student student = new Student(userName, email, password, firstName, lastName, phoneNumber, address);
             }
             else
             {
-                Teacher teacher = new Teacher(username, email, password, firstName, lastName, phoneNumber, address);
-
-                return teacher.Id;
+                Teacher teacher = new Teacher(userName, email, password, firstName, lastName, phoneNumber, address);
+                _dbContext.SaveChanges();
             }
-            
         }
     }
 }
