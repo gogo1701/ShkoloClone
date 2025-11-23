@@ -76,8 +76,14 @@
             Message = result.Message;
             IsError = false;
 
-            
-            Navigation.NavigateTo("/");
+            if (result.Data != null)
+            {
+                Navigation.NavigateTo($"/authenticated/{result.Data}");
+            }
+            else
+            {
+                Navigation.NavigateTo("/");
+            }
         }
         else
         {

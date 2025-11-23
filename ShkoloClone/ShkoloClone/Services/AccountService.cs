@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ShkoloClone.Data;
+using ShkoloClone.Enums;
 using ShkoloClone.Models;
 
 namespace ShkoloClone.Services
@@ -153,6 +154,13 @@ namespace ShkoloClone.Services
         /// </summary>
         /// <param name="userType">The user type</param>
         /// <returns>List of users of the specified type</returns>
-        public List<AppUser> GetUsersByType(Enums.AppUserEnum userType);
+        public List<AppUser> GetUsersByType(AppUserEnum userType);
+
+        /// <summary>
+        /// Gets the user type by user id
+        /// </summary>
+        /// <param name="userId">Id of user</param>
+        /// <returns>Role of user</returns>
+        public Result<AppUserEnum> GetUserTypeById(Guid userId);
     }
 }
